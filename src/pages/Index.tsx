@@ -8,7 +8,6 @@ import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
 import { useToast } from "@/components/ui/use-toast";
-import TxtDownloader from "@/components/TxtDownloader";
 
 // Process documents in batches to avoid browser freezes with many files
 const BATCH_SIZE = 10;
@@ -217,11 +216,7 @@ const Index = () => {
             onTitleChange={handleTitleChange}
             isDisabled={isProcessing || !activeDocument}
           />
-          <TxtDownloader 
-            document={activeDocument}
-            isDisabled={isProcessing}
-          />
-          <CsvGenerator 
+          <CsvGenerator
             title={currentTitle}
             content={activeDocument?.text || null}
             isDisabled={isProcessing || (!activeDocument && processedDocuments.length === 0)}

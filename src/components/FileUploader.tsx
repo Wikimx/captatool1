@@ -35,15 +35,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       // Warn if a large number of files is selected
       if (fileArray.length > 250) {
         toast({
-          title: "Too many files",
-          description: "Maximum 250 files can be processed at once. Only the first 250 files will be processed.",
+          title: "Demasiados archivos",
+          description: "Se pueden procesar un máximo de 250 archivos a la vez. Solo se procesarán los primeros 250 archivos.",
           variant: "destructive",
         });
         fileArray.splice(250); // Limit to first 250 files
       } else if (fileArray.length > 100) {
         toast({
-          title: "Large batch",
-          description: `Processing ${fileArray.length} files may take some time. Please wait patiently.`,
+          title: "Lote grande",
+          description: `Procesar ${fileArray.length} archivos puede tomar algún tiempo. Por favor espera pacientemente.`,
         });
       }
       
@@ -52,8 +52,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       
       if (invalidFiles.length > 0) {
         toast({
-          title: "Invalid file format",
-          description: `${invalidFiles.length} file(s) are not in .docx or .txt format. Only .docx and .txt files will be processed.`,
+          title: "Formato de archivo inválido",
+          description: `${invalidFiles.length} archivo(s) no están en formato .docx o .txt. Solo se procesarán archivos .docx y .txt.`,
           variant: "destructive",
         });
         
@@ -97,8 +97,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       
       if (validFiles.length === 0) {
         toast({
-          title: "Invalid file format",
-          description: "Only .docx and .txt files can be processed.",
+          title: "Formato de archivo inválido",
+          description: "Solo se pueden procesar archivos .docx y .txt.",
           variant: "destructive",
         });
         return;
@@ -107,23 +107,23 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       // Warn if different number of files than dropped
       if (validFiles.length < droppedFiles.length) {
         toast({
-          title: "Some files skipped",
-          description: `Only ${validFiles.length} out of ${droppedFiles.length} files are .docx or .txt and will be processed.`,
+          title: "Algunos archivos omitidos",
+          description: `Solo ${validFiles.length} de ${droppedFiles.length} archivos son .docx o .txt y serán procesados.`,
         });
       }
       
       // Warn if a large number of files is selected
       if (validFiles.length > 250) {
         toast({
-          title: "Too many files",
-          description: "Maximum 250 files can be processed at once. Only the first 250 files will be processed.",
+          title: "Demasiados archivos",
+          description: "Se pueden procesar un máximo de 250 archivos a la vez. Solo se procesarán los primeros 250 archivos.",
           variant: "destructive",
         });
         validFiles.splice(250); // Limit to first 250 files
       } else if (validFiles.length > 100) {
         toast({
-          title: "Large batch",
-          description: `Processing ${validFiles.length} files may take some time. Please wait patiently.`,
+          title: "Lote grande",
+          description: `Procesar ${validFiles.length} archivos puede tomar algún tiempo. Por favor espera pacientemente.`,
         });
       }
       
@@ -143,25 +143,25 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     <div className="relative w-full space-y-4">
       <div 
         className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center gap-4 
-          ${isProcessing ? 'bg-gray-100 border-gray-300' : 'border-docx-accent hover:border-docx-primary'}`}
+          ${isProcessing ? 'bg-muted border-border' : 'border-accent hover:border-primary'}`}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center text-center">
-          <div className="p-3 rounded-full bg-docx-light/20 mb-4">
-            <Upload className="h-10 w-10 text-docx-primary" />
+          <div className="p-3 rounded-full bg-accent/20 mb-4">
+            <Upload className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Upload Documents</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Upload up to 250 .docx or .txt files to convert to text and CSV.<br/>
-            Drag and drop files or click to browse.
+          <h3 className="text-xl font-semibold mb-2">Subir Documentos</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Sube hasta 250 archivos .docx o .txt para convertir a texto y CSV.<br/>
+            Arrastra y suelta archivos o haz clic para explorar.
           </p>
           <Button
             onClick={handleButtonClick}
             disabled={isProcessing}
-            className="bg-docx-primary hover:bg-docx-secondary"
+            className="bg-primary hover:bg-primary/90"
           >
-            {isProcessing ? "Processing..." : "Select Files"}
+            {isProcessing ? "Procesando..." : "Seleccionar Archivos"}
           </Button>
         </div>
         <input
@@ -177,8 +177,8 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         {isProcessing && totalCount > 0 && (
           <div className="w-full mt-4">
             <div className="flex justify-between text-sm mb-1">
-              <span>Processing files...</span>
-              <span>{processedCount} of {totalCount}</span>
+              <span>Procesando archivos...</span>
+              <span>{processedCount} de {totalCount}</span>
             </div>
             <Progress value={(processedCount / totalCount) * 100} className="h-2" />
           </div>

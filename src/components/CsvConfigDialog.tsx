@@ -413,7 +413,7 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleConfirm} className="bg-primary hover:bg-primary/90">
             Confirmar y generar CSV ({configs.length} documentos)
           </Button>
         </DialogFooter>

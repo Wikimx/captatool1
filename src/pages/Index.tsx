@@ -189,10 +189,15 @@ const Index = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-docx-primary">DocX Scribe Extract</h1>
-        <p className="text-muted-foreground mt-2">
-          Convert DOCX files to TXT and CSV with intelligent metadata extraction
+      <header className="mb-8">
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <img src="/src/assets/logo-capta.png" alt="CAPTA Logo" className="h-16" />
+        </div>
+        <h1 className="text-3xl font-bold text-primary text-center">
+          Herramientas CAPTA: Generador de bases de datos
+        </h1>
+        <p className="text-muted-foreground mt-2 text-center">
+          Convierte tus transcripciones de archivos .txt o .docx a una base de datos csv.
         </p>
       </header>
 
@@ -231,22 +236,22 @@ const Index = () => {
         <div className="lg:col-span-2">
           <Tabs defaultValue="preview" className="w-full">
             <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="preview">Document Preview</TabsTrigger>
-              <TabsTrigger value="text">Extracted Text</TabsTrigger>
+              <TabsTrigger value="preview">Vista Previa del Documento</TabsTrigger>
+              <TabsTrigger value="text">Texto Extraído</TabsTrigger>
             </TabsList>
             <TabsContent value="preview">
               <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
                 {processedDocuments.length > 1 && (
                   <div className="mb-4">
-                    <div className="text-sm font-medium mb-2">Batch Processing Summary:</div>
+                    <div className="text-sm font-medium mb-2">Resumen de Procesamiento por Lotes:</div>
                     <p className="text-sm text-muted-foreground">
-                      Processed {processedDocuments.length} documents
+                      Se procesaron {processedDocuments.length} documentos
                     </p>
                     
                     {/* Document selector */}
                     <div className="mt-4">
                       <label htmlFor="document-selector" className="text-sm font-medium mb-1 block">
-                        Preview document:
+                        Vista previa del documento:
                       </label>
                       <select 
                         id="document-selector"
@@ -267,11 +272,11 @@ const Index = () => {
                   <div className="text-center">
                     <p className="text-xl font-semibold mb-2">{currentTitle}</p>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Original file: {activeDocument.originalFilename}
+                      Archivo original: {activeDocument.originalFilename}
                     </p>
                     <p className="text-muted-foreground">
-                      {activeDocument.metadata.wordCount} words • 
-                      {" "}{activeDocument.metadata.characterCount} characters
+                      {activeDocument.metadata.wordCount} palabras • 
+                      {" "}{activeDocument.metadata.characterCount} caracteres
                     </p>
                     {activeDocument.metadata.participaciones && (
                       <p className="text-muted-foreground mt-2">
@@ -279,24 +284,24 @@ const Index = () => {
                       </p>
                     )}
                     
-                    <div className="mt-4 text-left p-4 bg-gray-50 rounded-lg">
-                      <h3 className="font-medium mb-2">Extracted Metadata:</h3>
+                    <div className="mt-4 text-left p-4 bg-muted/50 rounded-lg">
+                      <h3 className="font-medium mb-2">Metadatos Extraídos:</h3>
                       <ul className="text-sm space-y-1">
-                        <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detected"}</li>
-                        <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detected"}</li>
-                        <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detected"}</li>
-                        <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detected"}</li>
-                        <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detected"}</li>
-                        <li><strong>Fecha:</strong> {activeDocument.metadata.creationDate || "No detected"}</li>
+                        <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detectado"}</li>
+                        <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detectado"}</li>
+                        <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
+                        <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
+                        <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
+                        <li><strong>Fecha:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
                         {activeDocument.metadata.distributionSource && (
-                          <li><strong>Source:</strong> {activeDocument.metadata.distributionSource}</li>
+                          <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
                         )}
                       </ul>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground">
-                    <p>Upload a document to see preview</p>
+                    <p>Sube un documento para ver la vista previa</p>
                   </div>
                 )}
               </div>
@@ -313,7 +318,10 @@ const Index = () => {
       </div>
 
       <footer className="mt-12 text-center text-sm text-muted-foreground">
-        <p>DocX Scribe Extract • Document Processing Tool</p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <img src="/src/assets/c-capta.png" alt="CAPTA" className="h-6" />
+          <p>CAPTA • Herramientas de Procesamiento de Documentos</p>
+        </div>
       </footer>
 
       {/* Year input dialog */}

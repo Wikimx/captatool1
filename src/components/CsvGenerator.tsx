@@ -235,20 +235,20 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {hasCurrentBatch && (
-            <Button
-              onClick={handleAddBatch}
-              disabled={isDisabled || documents.length === 0}
-              className="w-full bg-docx-secondary hover:bg-docx-primary"
-              variant="default"
-            >
-              Agregar lote actual ({documents.length} archivos)
-            </Button>
+          <Button
+            onClick={handleAddBatch}
+            disabled={isDisabled || documents.length === 0}
+            className="w-full bg-secondary hover:bg-secondary/90"
+            variant="default"
+          >
+            Agregar lote actual ({documents.length} archivos)
+          </Button>
           )}
           
           <Button
             onClick={handleOpenDialog}
             disabled={isDisabled || !hasData || isGenerating}
-            className="w-full bg-docx-accent hover:bg-docx-primary"
+            className="w-full bg-accent hover:bg-accent/90"
             variant="default"
           >
             <Download className="mr-2 h-4 w-4" />

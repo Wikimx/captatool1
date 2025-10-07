@@ -32,10 +32,10 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({ content, title, isLoa
     return (
       <Card className="w-full h-[500px]">
         <CardHeader>
-          <CardTitle>Document Preview</CardTitle>
+          <CardTitle>Vista Previa del Documento</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[400px] text-muted-foreground">
-          Upload a document to see preview
+          Sube un documento para ver la vista previa
         </CardContent>
       </Card>
     );
@@ -44,7 +44,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({ content, title, isLoa
   return (
     <Card className="w-full h-[500px]">
       <CardHeader>
-        <CardTitle>{title || "Document Preview"}</CardTitle>
+        <CardTitle>{title || "Vista Previa del Documento"}</CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] rounded-md border p-4">

@@ -36,8 +36,8 @@ const TitleEditor: React.FC<TitleEditorProps> = ({
     if (title.trim()) {
       onTitleChange(title);
       toast({
-        title: "Title updated",
-        description: "The document title has been successfully updated."
+        title: "Título actualizado",
+        description: "El título del documento se ha actualizado exitosamente."
       });
     }
   };
@@ -46,8 +46,8 @@ const TitleEditor: React.FC<TitleEditorProps> = ({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-md flex items-center gap-2">
-          <FileText className="h-5 w-5 text-docx-primary" />
-          Edit Document Title
+          <FileText className="h-5 w-5 text-primary" />
+          Editar Título del Documento
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -55,16 +55,16 @@ const TitleEditor: React.FC<TitleEditorProps> = ({
           <Input
             value={title}
             onChange={handleTitleChange}
-            placeholder="Enter document title"
+            placeholder="Ingresa el título del documento"
             disabled={isDisabled}
             className="flex-1"
           />
           <Button 
             onClick={handleSave} 
             disabled={isDisabled || !title.trim()}
-            className="bg-docx-primary hover:bg-docx-secondary"
+            className="bg-primary hover:bg-primary/90"
           >
-            Save
+            Guardar
           </Button>
         </div>
       </CardContent>

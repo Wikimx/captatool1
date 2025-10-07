@@ -184,8 +184,8 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
   const groupedDocuments = groupDocumentsByPlaza(documents);
   const plazaGroups = Object.keys(groupedDocuments).sort();
 
-  const handleMouseDown = (field: keyof Omit<CsvConfig, 'documentId' | 'title'>, value: string, rowIndex: number, plaza: string) => {
-    setDragStartData({ field, value, rowIndex, plaza });
+  const handleMouseDown = (field: keyof Omit<CsvConfig, 'documentId' | 'title'>, value: string, rowIndex: number) => {
+    setDragStartData({ field, value, rowIndex, plaza: "" });
     setIsMouseDown(true);
   };
 
@@ -194,24 +194,23 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
     setIsMouseDown(false);
   };
   
-  const handleMouseEnter = (documentId: string, field: keyof Omit<CsvConfig, 'documentId' | 'title'>, rowIndex: number, plaza: string) => {
-    if (isMouseDown && dragStartData && dragStartData.plaza === plaza && dragStartData.field === field) {
+  const handleMouseEnter = (documentId: string, field: keyof Omit<CsvConfig, 'documentId' | 'title'>, rowIndex: number) => {
+    if (isMouseDown && dragStartData && dragStartData.field === field) {
       handleInputChange(documentId, field, dragStartData.value);
     }
   };
 
-  const handleFillDown = (field: keyof Omit<CsvConfig, 'documentId' | 'title'>, documentId: string, plaza: string) => {
+  const handleFillDown = (field: keyof Omit<CsvConfig, 'documentId' | 'title'>, documentId: string) => {
     const sourceConfig = configs.find(config => config.documentId === documentId);
     if (!sourceConfig) return;
     
     const valueToFill = sourceConfig[field];
     
-    const plazaConfigs = configs.filter(config => config.plaza === plaza);
-    const startIndex = plazaConfigs.findIndex(config => config.documentId === documentId);
+    const startIndex = configs.findIndex(config => config.documentId === documentId);
     
     if (startIndex === -1) return;
     
-    const docIdsToUpdate = plazaConfigs
+    const docIdsToUpdate = configs
       .slice(startIndex + 1)
       .map(config => config.documentId);
     
@@ -286,7 +285,7 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
           {incompleteCount > 0 && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
               <p className="text-yellow-800 font-medium">
-                ⚠️ {incompleteCount} documento(s) requieren NSE y/o edades (aparecen primero en cada plaza)
+                ⚠️ {incompleteCount} documento(s) requieren NSE y/o edades (aparecen primero en la lista)
               </p>
             </div>
           )}
@@ -297,114 +296,101 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
             <li>Doble clic en una celda para llenar todas las filas inferiores con el mismo valor</li>
             <li>Al cambiar la plaza, el estado se asigna automáticamente (CDMX, MTY→Nuevo León, GDL→Jalisco, VER→Veracruz)</li>
           </ul>
-          {hasUserModifications.size > 0 && (
-            <p className="text-blue-600 font-medium mt-2">
-              ✏️ {hasUserModifications.size} campos han sido modificados manualmente
-            </p>
-          )}
         </div>
 
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-[50vh]">
-            {plazaGroups.map(plaza => (
-              <div key={plaza} className="mb-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[180px]">Documento</TableHead>
-                      <TableHead>Grupo</TableHead>
-                      <TableHead>Plaza</TableHead>
-                      <TableHead>NSE</TableHead>
-                      <TableHead>Edades</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {configs
-                      .filter(config => {
-                        const doc = documents.find(d => d.originalFilename === config.documentId);
-                        return doc && (doc.metadata?.plaza || "Sin plaza") === plaza;
-                      })
-                      .sort((a, b) => {
-                        const aIncomplete = isDocumentIncomplete(a);
-                        const bIncomplete = isDocumentIncomplete(b);
-                        
-                        if (aIncomplete && !bIncomplete) return -1;
-                        if (!aIncomplete && bIncomplete) return 1;
-                        return 0;
-                      })
-                      .map((config, rowIndex) => {
-                        const isIncomplete = isDocumentIncomplete(config);
-                        const rowClassName = isIncomplete ? "bg-yellow-50 border-l-4 border-l-yellow-400" : "";
-                        
-                        return (
-                          <TableRow key={config.documentId} className={rowClassName}>
-                            <TableCell className="font-medium text-xs">
-                              {isIncomplete && <span className="text-yellow-600 mr-1">⚠️</span>}
-                              {config.title}
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={config.grupo}
-                                onChange={(e) => handleInputChange(config.documentId, "grupo", e.target.value)}
-                                placeholder="SG##"
-                                onMouseDown={() => handleMouseDown("grupo", config.grupo, rowIndex, plaza)}
-                                onMouseEnter={() => handleMouseEnter(config.documentId, "grupo", rowIndex, plaza)}
-                                onDoubleClick={() => handleFillDown("grupo", config.documentId, plaza)}
-                                className={hasUserModifications.has(`${config.documentId}-grupo`) ? "border-blue-300 bg-blue-50" : ""}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={config.plaza}
-                                onChange={(e) => handleInputChange(config.documentId, "plaza", e.target.value)}
-                                placeholder="CDMX, GDL, MTY, VER"
-                                onMouseDown={() => handleMouseDown("plaza", config.plaza, rowIndex, plaza)}
-                                onMouseEnter={() => handleMouseEnter(config.documentId, "plaza", rowIndex, plaza)}
-                                onDoubleClick={() => handleFillDown("plaza", config.documentId, plaza)}
-                                className={hasUserModifications.has(`${config.documentId}-plaza`) ? "border-blue-300 bg-blue-50" : ""}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={config.nse}
-                                onChange={(e) => handleInputChange(config.documentId, "nse", e.target.value)}
-                                placeholder="A, B, C+, C, C-, D+, D, E"
-                                onMouseDown={() => handleMouseDown("nse", config.nse, rowIndex, plaza)}
-                                onMouseEnter={() => handleMouseEnter(config.documentId, "nse", rowIndex, plaza)}
-                                onDoubleClick={() => handleFillDown("nse", config.documentId, plaza)}
-                                className={`${hasUserModifications.has(`${config.documentId}-nse`) ? "border-blue-300 bg-blue-50" : ""} ${!config.nse ? "border-yellow-300 bg-yellow-50" : ""}`}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={config.edades}
-                                onChange={(e) => handleInputChange(config.documentId, "edades", e.target.value)}
-                                placeholder="18 a 35"
-                                onMouseDown={() => handleMouseDown("edades", config.edades, rowIndex, plaza)}
-                                onMouseEnter={() => handleMouseEnter(config.documentId, "edades", rowIndex, plaza)}
-                                onDoubleClick={() => handleFillDown("edades", config.documentId, plaza)}
-                                className={`${hasUserModifications.has(`${config.documentId}-edades`) ? "border-blue-300 bg-blue-50" : ""} ${!config.edades ? "border-yellow-300 bg-yellow-50" : ""}`}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={config.estado}
-                                onChange={(e) => handleInputChange(config.documentId, "estado", e.target.value)}
-                                placeholder="Estado"
-                                onMouseDown={() => handleMouseDown("estado", config.estado, rowIndex, plaza)}
-                                onMouseEnter={() => handleMouseEnter(config.documentId, "estado", rowIndex, plaza)}
-                                onDoubleClick={() => handleFillDown("estado", config.documentId, plaza)}
-                                className={hasUserModifications.has(`${config.documentId}-estado`) ? "border-blue-300 bg-blue-50" : ""}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                  </TableBody>
-                </Table>
-              </div>
-            ))}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[180px]">Documento</TableHead>
+                  <TableHead>Grupo</TableHead>
+                  <TableHead>Plaza</TableHead>
+                  <TableHead>NSE</TableHead>
+                  <TableHead>Edades</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {configs
+                  .sort((a, b) => {
+                    const aIncomplete = isDocumentIncomplete(a);
+                    const bIncomplete = isDocumentIncomplete(b);
+                    
+                    if (aIncomplete && !bIncomplete) return -1;
+                    if (!aIncomplete && bIncomplete) return 1;
+                    return 0;
+                  })
+                  .map((config, rowIndex) => {
+                    const isIncomplete = isDocumentIncomplete(config);
+                    const rowClassName = isIncomplete ? "bg-yellow-50 border-l-4 border-l-yellow-400" : "";
+                    
+                    return (
+                      <TableRow key={config.documentId} className={rowClassName}>
+                        <TableCell className="font-medium text-xs">
+                          {isIncomplete && <span className="text-yellow-600 mr-1">⚠️</span>}
+                          {config.title}
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={config.grupo}
+                            onChange={(e) => handleInputChange(config.documentId, "grupo", e.target.value)}
+                            placeholder="SG##"
+                            onMouseDown={() => handleMouseDown("grupo", config.grupo, rowIndex)}
+                            onMouseEnter={() => handleMouseEnter(config.documentId, "grupo", rowIndex)}
+                            onDoubleClick={() => handleFillDown("grupo", config.documentId)}
+                            className={hasUserModifications.has(`${config.documentId}-grupo`) ? "border-blue-300 bg-blue-50" : ""}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={config.plaza}
+                            onChange={(e) => handleInputChange(config.documentId, "plaza", e.target.value)}
+                            placeholder="CDMX, GDL, MTY, VER"
+                            onMouseDown={() => handleMouseDown("plaza", config.plaza, rowIndex)}
+                            onMouseEnter={() => handleMouseEnter(config.documentId, "plaza", rowIndex)}
+                            onDoubleClick={() => handleFillDown("plaza", config.documentId)}
+                            className={hasUserModifications.has(`${config.documentId}-plaza`) ? "border-blue-300 bg-blue-50" : ""}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={config.nse}
+                            onChange={(e) => handleInputChange(config.documentId, "nse", e.target.value)}
+                            placeholder="A, B, C+, C, C-, D+, D, E"
+                            onMouseDown={() => handleMouseDown("nse", config.nse, rowIndex)}
+                            onMouseEnter={() => handleMouseEnter(config.documentId, "nse", rowIndex)}
+                            onDoubleClick={() => handleFillDown("nse", config.documentId)}
+                            className={`${hasUserModifications.has(`${config.documentId}-nse`) ? "border-blue-300 bg-blue-50" : ""} ${!config.nse ? "border-yellow-300 bg-yellow-50" : ""}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={config.edades}
+                            onChange={(e) => handleInputChange(config.documentId, "edades", e.target.value)}
+                            placeholder="18 a 35"
+                            onMouseDown={() => handleMouseDown("edades", config.edades, rowIndex)}
+                            onMouseEnter={() => handleMouseEnter(config.documentId, "edades", rowIndex)}
+                            onDoubleClick={() => handleFillDown("edades", config.documentId)}
+                            className={`${hasUserModifications.has(`${config.documentId}-edades`) ? "border-blue-300 bg-blue-50" : ""} ${!config.edades ? "border-yellow-300 bg-yellow-50" : ""}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={config.estado}
+                            onChange={(e) => handleInputChange(config.documentId, "estado", e.target.value)}
+                            placeholder="Estado"
+                            onMouseDown={() => handleMouseDown("estado", config.estado, rowIndex)}
+                            onMouseEnter={() => handleMouseEnter(config.documentId, "estado", rowIndex)}
+                            onDoubleClick={() => handleFillDown("estado", config.documentId)}
+                            className={hasUserModifications.has(`${config.documentId}-estado`) ? "border-blue-300 bg-blue-50" : ""}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
           </ScrollArea>
         </div>
 

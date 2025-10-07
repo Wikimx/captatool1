@@ -8,6 +8,8 @@ import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
 import { useToast } from "@/components/ui/use-toast";
+import logoCapta from "@/assets/logo-capta.png";
+import cCapta from "@/assets/c-capta.png";
 
 // Process documents in batches to avoid browser freezes with many files
 const BATCH_SIZE = 10;
@@ -188,7 +190,7 @@ const Index = () => {
     <div className="container mx-auto py-8">
       <header className="mb-8">
         <div className="flex items-center justify-center gap-4 mb-6">
-          <img src="/src/assets/logo-capta.png" alt="CAPTA Logo" className="h-16" />
+          <img src={logoCapta} alt="CAPTA Logo" className="h-16" />
         </div>
         <h1 className="text-3xl font-bold text-primary text-center">
           Herramientas CAPTA: Generador de bases de datos
@@ -297,7 +299,7 @@ const Index = () => {
 
       <footer className="mt-12 text-center text-sm text-muted-foreground">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <img src="/src/assets/c-capta.png" alt="CAPTA" className="h-6" />
+          <img src={cCapta} alt="CAPTA" className="h-6" />
           <p>CAPTA • Herramientas de Procesamiento de Documentos</p>
         </div>
       </footer>

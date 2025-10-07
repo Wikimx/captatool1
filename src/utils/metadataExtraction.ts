@@ -146,42 +146,17 @@ function extractGrupoFromContent(content: string): string | undefined {
 }
 
 function extractEdadesFromTitle(title: string): string | undefined {
-  const edadesPatterns = [
-    // Exact matches for our valid ranges
-    /(18\s*a\s*25)(?:\s*años)?/i,
-    /(35\s*a\s*55)(?:\s*años)?/i,
-    /(18\s*-\s*25)(?:\s*años)?/i,
-    /(35\s*-\s*55)(?:\s*años)?/i,
+  // Generic pattern: "número a número" (e.g., "15 a 17", "32 a 40", "18 a 25")
+  const genericAgePattern = /(\d{1,2})\s*a\s*(\d{1,2})(?:\s*años)?/i;
+  
+  const match = title.match(genericAgePattern);
+  if (match) {
+    const startAge = match[1];
+    const endAge = match[2];
+    const ageRange = `${startAge} a ${endAge}`;
     
-    // Broader ranges that should map to our valid ranges
-    /(18\s*a\s*2[4-9])(?:\s*años)?/i,  // 18 a 24-29 -> maps to 18 a 25
-    /(18\s*a\s*3[0-4])(?:\s*años)?/i,  // 18 a 30-34 -> maps to 18 a 25
-    /(18\s*-\s*2[4-9])(?:\s*años)?/i,  // 18-24 to 18-29 -> maps to 18 a 25
-    
-    // New patterns for common typos
-    /(18\s*a\s*2)(?:\s*años)?/i,       // "18 a 2" typo -> maps to 18 a 25
-    /(18\s*a\s*\d)(?:\s*años)?/i,      // "18 a [single digit]" -> maps to 18 a 25
-    
-    /(3[0-9]\s*a\s*5[0-9])(?:\s*años)?/i,  // 30-39 a 50-59 -> maps to 35 a 55
-    /(3[0-9]\s*-\s*5[0-9])(?:\s*años)?/i,  // 30-39 - 50-59 -> maps to 35 a 55
-  ];
-
-  for (const pattern of edadesPatterns) {
-    const match = title.match(pattern);
-    if (match) {
-      const rangeText = match[1].toLowerCase();
-      
-      console.log(`🎯 Found age pattern: ${match[1]}`);
-      
-      // Map to our valid ranges
-      if (rangeText.includes('18')) {
-        console.log(`📝 Mapping to "18 a 25"`);
-        return "18 a 25";
-      } else if (rangeText.includes('3') || rangeText.includes('4') || rangeText.includes('5')) {
-        console.log(`📝 Mapping to "35 a 55"`);
-        return "35 a 55";
-      }
-    }
+    console.log(`🎯 Found age pattern: ${ageRange}`);
+    return ageRange;
   }
 
   return undefined;

@@ -62,6 +62,10 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
   const [hasUserModifications, setHasUserModifications] = useState<Set<string>>(new Set());
   const previousDocumentsRef = useRef<ProcessedDocument[]>([]);
   const isInitializedRef = useRef(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof CsvConfig | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
 
   const groupDocumentsByPlaza = (docs: ProcessedDocument[]): Record<string, ProcessedDocument[]> => {
     const grouped: Record<string, ProcessedDocument[]> = {};
@@ -175,6 +179,39 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
     if (field === 'plaza' && getEstadoFromPlaza(value)) {
       setHasUserModifications(prev => new Set(prev).add(`${documentId}-estado`));
     }
+  };
+
+  const handleSort = (key: keyof CsvConfig) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedConfigs = () => {
+    if (!sortConfig.key) {
+      return configs.sort((a, b) => {
+        const aIncomplete = isDocumentIncomplete(a);
+        const bIncomplete = isDocumentIncomplete(b);
+        
+        if (aIncomplete && !bIncomplete) return -1;
+        if (!aIncomplete && bIncomplete) return 1;
+        return 0;
+      });
+    }
+
+    return [...configs].sort((a, b) => {
+      const aValue = a[sortConfig.key!];
+      const bValue = b[sortConfig.key!];
+      
+      if (aValue === bValue) return 0;
+      
+      const comparison = aValue < bValue ? -1 : 1;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
   };
 
   const handleConfirm = () => {
@@ -303,25 +340,76 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[180px]">Documento</TableHead>
-                  <TableHead>Grupo</TableHead>
-                  <TableHead>Plaza</TableHead>
-                  <TableHead>NSE</TableHead>
-                  <TableHead>Edades</TableHead>
-                  <TableHead>Estado</TableHead>
+                  <TableHead 
+                    className="w-[180px] cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Documento
+                      {sortConfig.key === 'title' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('grupo')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Grupo
+                      {sortConfig.key === 'grupo' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('plaza')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Plaza
+                      {sortConfig.key === 'plaza' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('nse')}
+                  >
+                    <div className="flex items-center gap-1">
+                      NSE
+                      {sortConfig.key === 'nse' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('edades')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Edades
+                      {sortConfig.key === 'edades' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('estado')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Estado
+                      {sortConfig.key === 'estado' && (
+                        <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {configs
-                  .sort((a, b) => {
-                    const aIncomplete = isDocumentIncomplete(a);
-                    const bIncomplete = isDocumentIncomplete(b);
-                    
-                    if (aIncomplete && !bIncomplete) return -1;
-                    if (!aIncomplete && bIncomplete) return 1;
-                    return 0;
-                  })
-                  .map((config, rowIndex) => {
+                {getSortedConfigs().map((config, rowIndex) => {
                     const isIncomplete = isDocumentIncomplete(config);
                     const rowClassName = isIncomplete ? "bg-yellow-50 border-l-4 border-l-yellow-400" : "";
                     

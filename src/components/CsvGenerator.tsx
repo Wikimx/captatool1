@@ -51,8 +51,6 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [allBatchDocuments, setAllBatchDocuments] = useState<ProcessedDocument[]>([]);
-  const [localBatchCount, setLocalBatchCount] = useState(batchCount);
 
   const generateParticipacionesCsv = (processedDocuments: ProcessedDocument[], csvConfigs?: CsvConfig[], creationYear?: string) => {
     if (processedDocuments.length === 0) {
@@ -80,7 +78,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
           Estado: estado,
           Edades: edades,
           NSE: nse,
-          "Fecha de creación": creationDate,
+          "Fecha de sesiones": creationDate,
           Hora: "",
           Participante: "",
           "Rol": "",
@@ -96,7 +94,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
             Estado: estado,
             Edades: edades,
             NSE: nse,
-            "Fecha de creación": creationDate,
+            "Fecha de sesiones": creationDate,
             Hora: p.hora || "",
             Participante: p.participante || "",
             "Rol": getRolParticipante(p.participante || ""),
@@ -111,10 +109,6 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
     return rows;
   };
 
-  React.useEffect(() => {
-    setLocalBatchCount(batchCount);
-  }, [batchCount]);
-  
   const handleOpenDialog = () => {
     let documentsToProcess = documents.length > 0 ? documents : [];
     
@@ -139,35 +133,8 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
     setIsDialogOpen(false);
   };
 
-  const handleAddBatch = () => {
-    const newDocuments = documents.filter(doc => 
-      !allBatchDocuments.some(existingDoc => existingDoc.originalFilename === doc.originalFilename)
-    );
-    
-    if (newDocuments.length === 0) {
-      toast({
-        title: "Lote ya agregado",
-        description: "Estos archivos ya han sido agregados previamente."
-      });
-      return;
-    }
-    
-    setAllBatchDocuments(prev => [...prev, ...newDocuments]);
-    setLocalBatchCount(prevCount => prevCount + 1);
-    
-    toast({
-      title: "Lote agregado",
-      description: `Se agregaron ${newDocuments.length} archivos al lote ${localBatchCount}. Puede continuar agregando más lotes.`
-    });
-  };
-
   const downloadCsv = (csvConfigs?: CsvConfig[], creationYear?: string) => {
-    const docsToProcess = [...allBatchDocuments];
-    
-    const currentBatchDocs = documents.filter(doc => 
-      !allBatchDocuments.some(existingDoc => existingDoc.originalFilename === doc.originalFilename)
-    );
-    docsToProcess.push(...currentBatchDocs);
+    const docsToProcess = documents;
     
     if (docsToProcess.length === 0) {
       return;
@@ -215,16 +182,8 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
     }
   };
 
-  React.useEffect(() => {
-    if (documents.length === 0 && allBatchDocuments.length > 0) {
-      setAllBatchDocuments([]);
-      setLocalBatchCount(1);
-    }
-  }, [documents.length]);
-
-  const hasData = (allBatchDocuments.length > 0) || (documents && documents.length > 0) || (title && content);
-  const documentsCount = allBatchDocuments.length + (documents ? documents.length : 0) || (title && content ? 1 : 0);
-  const hasCurrentBatch = documents && documents.length > 0;
+  const hasData = (documents && documents.length > 0) || (title && content);
+  const documentsCount = (documents ? documents.length : 0) || (title && content ? 1 : 0);
 
   return (
     <>
@@ -234,17 +193,6 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
           <CardDescription>Descarga tus documentos procesados</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {hasCurrentBatch && (
-          <Button
-            onClick={handleAddBatch}
-            disabled={isDisabled || documents.length === 0}
-            className="w-full bg-secondary hover:bg-secondary/90"
-            variant="default"
-          >
-            Agregar lote actual ({documents.length} archivos)
-          </Button>
-          )}
-          
           <Button
             onClick={handleOpenDialog}
             disabled={isDisabled || !hasData || isGenerating}
@@ -255,12 +203,9 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
             {isGenerating ? "Generando..." : `Generar y Descargar CSV ${documentsCount > 1 ? `(${documentsCount} archivos)` : ''}`}
           </Button>
           
-          {allBatchDocuments.length > 0 && (
-            <div className="text-sm text-gray-500 pt-2">
-              <p>Lotes guardados: {localBatchCount - 1}</p>
-              <p>Total archivos: {allBatchDocuments.length}</p>
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground text-center mt-4">
+            Recuerda subir el archivo final a la carpeta de transcripciones del proyecto.
+          </p>
         </CardContent>
       </Card>
       
@@ -268,8 +213,8 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
         isOpen={isDialogOpen}
         onClose={handleCloseDialog}
         onConfirm={handleConfirmConfig}
-        documents={[...allBatchDocuments, ...documents]}
-        batchCount={localBatchCount}
+        documents={documents}
+        batchCount={batchCount}
       />
     </>
   );

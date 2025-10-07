@@ -268,17 +268,17 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
         </DialogHeader>
 
         <div className="mb-4">
-          <Label htmlFor="creationYear">Fecha de creación (año):</Label>
+          <Label htmlFor="creationYear">Fecha de sesiones:</Label>
           <Input
             id="creationYear"
             type="text"
             value={creationYear}
             onChange={(e) => setCreationYear(e.target.value)}
-            placeholder="2024"
+            placeholder="Marzo 2025"
             className="max-w-xs"
           />
           <p className="text-sm text-muted-foreground mt-1">
-            Este valor se usará para la columna "Fecha de creación" en todos los documentos de este lote.
+            Este valor se usará para la columna "Fecha de sesiones" en todos los documentos de este lote.
           </p>
         </div>
         
@@ -308,7 +308,6 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
           <ScrollArea className="h-[50vh]">
             {plazaGroups.map(plaza => (
               <div key={plaza} className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Plaza: {plaza}</h3>
                 <Table>
                   <TableHeader>
                     <TableRow>

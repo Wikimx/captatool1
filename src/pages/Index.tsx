@@ -1,11 +1,9 @@
 
 import React, { useState, useCallback } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { extractTextFromDocx, processDocumentsWithGroupDistribution } from "@/utils/documentUtils";
 import type { ProcessedDocument } from "@/types/document";
 import FileUploader from "@/components/FileUploader";
-import DocumentPreview from "@/components/DocumentPreview";
 import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
@@ -234,56 +232,50 @@ const Index = () => {
 
         {/* Right column - Document preview */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue="preview" className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="preview">Vista Previa del Documento</TabsTrigger>
-              <TabsTrigger value="text">Texto Extraído</TabsTrigger>
-            </TabsList>
-            <TabsContent value="preview">
-              <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                {processedDocuments.length > 1 && (
-                  <div className="mb-4">
-                    <div className="text-sm font-medium mb-2">Resumen de Procesamiento por Lotes:</div>
-                    <p className="text-sm text-muted-foreground">
-                      Se procesaron {processedDocuments.length} documentos
-                    </p>
-                    
-                    {/* Document selector */}
-                    <div className="mt-4">
-                      <label htmlFor="document-selector" className="text-sm font-medium mb-1 block">
-                        Vista previa del documento:
-                      </label>
-                      <select 
-                        id="document-selector"
-                        className="w-full p-2 border rounded-md"
-                        onChange={(e) => switchActiveDocument(parseInt(e.target.value))}
-                      >
-                        {processedDocuments.map((doc, index) => (
-                          <option key={index} value={index}>
-                            {doc.originalFilename}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            {processedDocuments.length > 1 && (
+              <div className="mb-4">
+                <div className="text-sm font-medium mb-2">Resumen de Procesamiento por Lotes:</div>
+                <p className="text-sm text-muted-foreground">
+                  Se procesaron {processedDocuments.length} documentos
+                </p>
+                
+                {/* Document selector */}
+                <div className="mt-4">
+                  <label htmlFor="document-selector" className="text-sm font-medium mb-1 block">
+                    Vista previa del documento:
+                  </label>
+                  <select 
+                    id="document-selector"
+                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => switchActiveDocument(parseInt(e.target.value))}
+                  >
+                    {processedDocuments.map((doc, index) => (
+                      <option key={index} value={index}>
+                        {doc.originalFilename}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+            
+            {activeDocument ? (
+              <div className="text-center">
+                <p className="text-xl font-semibold mb-2">{currentTitle}</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Archivo original: {activeDocument.originalFilename}
+                </p>
+                <p className="text-muted-foreground">
+                  {activeDocument.metadata.wordCount} palabras • 
+                  {" "}{activeDocument.metadata.characterCount} caracteres
+                </p>
+                {activeDocument.metadata.participaciones && (
+                  <p className="text-muted-foreground mt-2">
+                    {activeDocument.metadata.participaciones.length} participaciones detectadas
+                  </p>
                 )}
                 
-                {activeDocument ? (
-                  <div className="text-center">
-                    <p className="text-xl font-semibold mb-2">{currentTitle}</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Archivo original: {activeDocument.originalFilename}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {activeDocument.metadata.wordCount} palabras • 
-                      {" "}{activeDocument.metadata.characterCount} caracteres
-                    </p>
-                    {activeDocument.metadata.participaciones && (
-                      <p className="text-muted-foreground mt-2">
-                        {activeDocument.metadata.participaciones.length} participaciones detectadas
-                      </p>
-                    )}
-                    
                     <div className="mt-4 text-left p-4 bg-muted/50 rounded-lg">
                       <h3 className="font-medium mb-2">Metadatos Extraídos:</h3>
                       <ul className="text-sm space-y-1">
@@ -292,28 +284,19 @@ const Index = () => {
                         <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
                         <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
                         <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
-                        <li><strong>Fecha:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
+                        <li><strong>Fecha de sesiones:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
                         {activeDocument.metadata.distributionSource && (
                           <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
                         )}
                       </ul>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    <p>Sube un documento para ver la vista previa</p>
-                  </div>
-                )}
               </div>
-            </TabsContent>
-            <TabsContent value="text">
-              <DocumentPreview 
-                content={activeDocument?.text || null} 
-                title={currentTitle}
-                isLoading={isProcessing}
-              />
-            </TabsContent>
-          </Tabs>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <p>Sube un documento para ver la vista previa</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Trash2, Plus } from "lucide-react";
 import { CategoryDefinition } from "@/types/document";
 
@@ -93,12 +94,13 @@ const CategoryConfigDialog: React.FC<CategoryConfigDialogProps> = ({
                     <Label htmlFor={`category-phrases-${index}`}>
                       Palabras o Frases Clave (separadas por comas)
                     </Label>
-                    <Input
+                    <Textarea
                       id={`category-phrases-${index}`}
                       value={category.frasesClave.join(", ")}
                       onChange={(e) => handleFrasesChange(index, e.target.value)}
                       placeholder="Ej: buenos días, vamos a comenzar, primera parte"
                       className="mt-1"
+                      rows={3}
                     />
                     {category.frasesClave.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">

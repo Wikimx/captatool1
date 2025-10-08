@@ -73,8 +73,8 @@ const Index = () => {
         setCurrentBatchDocs(documentsWithGroupDistribution);
         setCurrentBatchFiles(allFiles);
         
-        // Show category dialog first
-        setShowCategoryDialog(true);
+        // Show year dialog first
+        setShowYearDialog(true);
         
         toast({
           title: "Procesamiento Completo",
@@ -109,8 +109,8 @@ const Index = () => {
         setCurrentBatchFiles(files);
         setCurrentTitle(processedWithGroup[0].title);
         
-        // Show category dialog first
-        setShowCategoryDialog(true);
+        // Show year dialog first
+        setShowYearDialog(true);
         
         toast({
           title: "Documento Procesado",
@@ -132,17 +132,24 @@ const Index = () => {
     }
   };
 
-  const handleCategoryDialogClose = (categories?: CategoryDefinition[]) => {
-    setShowCategoryDialog(false);
+  const handleYearDialogClose = (year?: string) => {
+    setShowYearDialog(false);
     
-    if (categories && currentBatchDocs.length > 0) {
-      // Apply categories to documents
-      const docsWithCategories = applyCategoriestoDocuments(currentBatchDocs, categories);
-      setCurrentBatchDocs(docsWithCategories);
-      setCategoryDefinitions(categories);
+    if (year && currentBatchDocs.length > 0) {
+      // Add year to documents metadata
+      const docsWithYear = currentBatchDocs.map(doc => ({
+        ...doc,
+        metadata: {
+          ...doc.metadata,
+          creationDate: year
+        }
+      }));
       
-      // Now show year dialog
-      setShowYearDialog(true);
+      // Store the documents with year for category processing
+      setCurrentBatchDocs(docsWithYear);
+      
+      // Now show category dialog
+      setShowCategoryDialog(true);
     } else {
       // User cancelled, stop processing
       setIsProcessing(false);
@@ -151,17 +158,20 @@ const Index = () => {
     }
   };
 
-  const handleYearDialogClose = (year?: string) => {
-    setShowYearDialog(false);
+  const handleCategoryDialogClose = (categories?: CategoryDefinition[]) => {
+    setShowCategoryDialog(false);
     setIsProcessing(false);
     
-    if (year && currentBatchDocs.length > 0) {
-      // Add batch information and year to the documents
-      const updatedBatchDocs = currentBatchDocs.map(doc => ({
+    if (categories && currentBatchDocs.length > 0) {
+      // Apply categories to documents
+      const docsWithCategories = applyCategoriestoDocuments(currentBatchDocs, categories);
+      setCategoryDefinitions(categories);
+      
+      // Add batch information to the documents
+      const updatedBatchDocs = docsWithCategories.map(doc => ({
         ...doc,
         metadata: {
           ...doc.metadata,
-          creationDate: year,
           batchId: batchCount
         }
       }));
@@ -176,6 +186,10 @@ const Index = () => {
       setCurrentBatchDocs([]);
       setCurrentBatchFiles([]);
       setCategoryDefinitions([]);
+    } else {
+      // User cancelled, stop processing
+      setCurrentBatchDocs([]);
+      setCurrentBatchFiles([]);
     }
   };
 

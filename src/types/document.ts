@@ -24,6 +24,12 @@ export interface Participacion {
   hora?: string;
   participante?: string;
   texto: string;
+  categoria?: string;
+}
+
+export interface CategoryDefinition {
+  nombre: string;
+  frasesClave: string[];
 }
 
 export interface FileWithContent {

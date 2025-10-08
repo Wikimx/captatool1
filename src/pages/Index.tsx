@@ -7,9 +7,12 @@ import FileUploader from "@/components/FileUploader";
 import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
+import CategoryConfigDialog from "@/components/CategoryConfigDialog";
 import { useToast } from "@/components/ui/use-toast";
 import logoCapta from "@/assets/logo-capta.png";
 import cCapta from "@/assets/c-capta.png";
+import type { CategoryDefinition } from "@/types/document";
+import { applyCategoriestoDocuments } from "@/utils/categoryUtils";
 
 // Process documents in batches to avoid browser freezes with many files
 const BATCH_SIZE = 10;
@@ -21,9 +24,11 @@ const Index = () => {
   const [processedDocuments, setProcessedDocuments] = useState<ProcessedDocument[]>([]);
   const [currentTitle, setCurrentTitle] = useState<string | null>(null);
   const [showYearDialog, setShowYearDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [currentBatchDocs, setCurrentBatchDocs] = useState<ProcessedDocument[]>([]);
   const [currentBatchFiles, setCurrentBatchFiles] = useState<File[]>([]);
   const [batchCount, setBatchCount] = useState(1);
+  const [categoryDefinitions, setCategoryDefinitions] = useState<CategoryDefinition[]>([]);
   const { toast } = useToast();
 
   const processBatch = useCallback(async (files: File[], startIdx: number, accumulator: ProcessedDocument[] = [], allFiles: File[] = []) => {
@@ -64,10 +69,12 @@ const Index = () => {
           setCurrentTitle(documentsWithGroupDistribution[0].title);
         }
         
-        // Store current batch documents and files for year dialog
+        // Store current batch documents and files
         setCurrentBatchDocs(documentsWithGroupDistribution);
         setCurrentBatchFiles(allFiles);
-        setShowYearDialog(true);
+        
+        // Show category dialog first
+        setShowCategoryDialog(true);
         
         toast({
           title: "Procesamiento Completo",
@@ -102,8 +109,8 @@ const Index = () => {
         setCurrentBatchFiles(files);
         setCurrentTitle(processedWithGroup[0].title);
         
-        // Show year dialog for single file too
-        setShowYearDialog(true);
+        // Show category dialog first
+        setShowCategoryDialog(true);
         
         toast({
           title: "Documento Procesado",
@@ -122,6 +129,25 @@ const Index = () => {
       });
       setIsProcessing(false);
       setProcessingProgress({ processed: 0, total: 0 });
+    }
+  };
+
+  const handleCategoryDialogClose = (categories?: CategoryDefinition[]) => {
+    setShowCategoryDialog(false);
+    
+    if (categories && currentBatchDocs.length > 0) {
+      // Apply categories to documents
+      const docsWithCategories = applyCategoriestoDocuments(currentBatchDocs, categories);
+      setCurrentBatchDocs(docsWithCategories);
+      setCategoryDefinitions(categories);
+      
+      // Now show year dialog
+      setShowYearDialog(true);
+    } else {
+      // User cancelled, stop processing
+      setIsProcessing(false);
+      setCurrentBatchDocs([]);
+      setCurrentBatchFiles([]);
     }
   };
 
@@ -149,6 +175,7 @@ const Index = () => {
       // Clear current batch
       setCurrentBatchDocs([]);
       setCurrentBatchFiles([]);
+      setCategoryDefinitions([]);
     }
   };
 
@@ -303,6 +330,13 @@ const Index = () => {
           <p>CAPTA • Herramientas de Procesamiento de Documentos</p>
         </div>
       </footer>
+
+      {/* Category config dialog */}
+      <CategoryConfigDialog
+        isOpen={showCategoryDialog}
+        onClose={handleCategoryDialogClose}
+        onConfirm={handleCategoryDialogClose}
+      />
 
       {/* Year input dialog */}
       <YearInputDialog 

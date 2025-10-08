@@ -98,6 +98,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
             Hora: p.hora || "",
             Participante: p.participante || "",
             "Rol": getRolParticipante(p.participante || ""),
+            Categoría: p.categoria || "Sin clasificar",
             Participación: p.texto || "",
             "Participación minúsculas": (p.texto || "").toLowerCase(),
             "Archivo fuente": doc.title

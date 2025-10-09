@@ -56,33 +56,46 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
     setCategories(updated);
   };
 
-  const handleBulkInputChange = (text: string) => {
-    setBulkInput(text);
+  const handlePasteInTable = (e: React.ClipboardEvent) => {
+    e.preventDefault();
     
-    // Parse the pasted data
-    const lines = text.split('\n').filter(line => line.trim() !== '');
+    // Get pasted data from clipboard
+    const pastedData = e.clipboardData.getData('text');
+    
+    if (!pastedData) return;
+    
+    // Parse the pasted data (Excel/Sheets format: tabs separate columns, newlines separate rows)
+    const lines = pastedData.split('\n').filter(line => line.trim() !== '');
     const parsedCategories: CategoryDefinition[] = [];
+    const parsedTextInputs: string[] = [];
     
     lines.forEach(line => {
-      // Split by tab (Excel copy-paste) or by pipe |
-      const parts = line.includes('\t') ? line.split('\t') : line.split('|');
+      // Split by tab (Excel/Sheets copy-paste)
+      const parts = line.split('\t');
       
       if (parts.length >= 2) {
         const nombre = parts[0].trim();
-        const frases = parts[1]
+        const frasesText = parts[1].trim();
+        const frases = frasesText
           .split(',')
           .map(f => f.trim())
           .filter(f => f.length > 0);
         
         if (nombre && frases.length > 0) {
           parsedCategories.push({ nombre, frasesClave: frases });
+          parsedTextInputs.push(frasesText);
         }
+      } else if (parts.length === 1 && parts[0].trim()) {
+        // Single column paste - treat as category name only
+        const nombre = parts[0].trim();
+        parsedCategories.push({ nombre, frasesClave: [] });
+        parsedTextInputs.push("");
       }
     });
     
     if (parsedCategories.length > 0) {
       setCategories(parsedCategories);
-      setTextInputs(parsedCategories.map(cat => cat.frasesClave.join(", ")));
+      setTextInputs(parsedTextInputs);
     }
   };
 
@@ -120,11 +133,11 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
               <div>
                 <Label>Tabla de Categorías</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Edita directamente en la tabla o copia/pega desde Excel
+                  📋 Copia y pega directamente desde Excel o Google Sheets
                 </p>
               </div>
               
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg overflow-hidden" onPaste={handlePasteInTable}>
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
@@ -152,6 +165,7 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
                           <Input
                             value={category.nombre}
                             onChange={(e) => handleCategoryNameChange(index, e.target.value)}
+                            onPaste={handlePasteInTable}
                             placeholder="Nombre categoría"
                             className="h-9"
                             disabled={isDisabled}
@@ -161,6 +175,7 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
                           <Input
                             value={textInputs[index] || ""}
                             onChange={(e) => handleFrasesChange(index, e.target.value)}
+                            onPaste={handlePasteInTable}
                             placeholder="palabra1, palabra2, palabra3"
                             className="h-9"
                             disabled={isDisabled}

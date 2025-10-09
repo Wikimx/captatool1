@@ -16,6 +16,27 @@ interface CsvGeneratorProps {
   batchCount?: number;
 }
 
+// Function to normalize time format to HH:MM
+const normalizeTimeFormat = (time: string): string => {
+  if (!time) return "";
+  
+  // Remove milliseconds if present (e.g., "14:30:45.123" -> "14:30:45")
+  const timeWithoutMs = time.split('.')[0];
+  
+  // Split by colon
+  const parts = timeWithoutMs.split(':');
+  
+  // If we have HH:MM:SS format, keep only HH:MM
+  if (parts.length >= 2) {
+    const hours = parts[0].padStart(2, '0');
+    const minutes = parts[1].padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+  
+  // Return as is if format is unexpected
+  return time;
+};
+
 // Function to determine participant role
 const getRolParticipante = (name: string): string => {
   const MODERADORES = [
@@ -95,7 +116,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
             Edades: edades,
             NSE: nse,
             "Fecha de sesiones": creationDate,
-            Hora: p.hora || "",
+            Hora: normalizeTimeFormat(p.hora || ""),
             Participante: p.participante || "",
             "Rol": getRolParticipante(p.participante || ""),
             Categoría: p.categoria || "Sin clasificar",

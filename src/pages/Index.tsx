@@ -27,6 +27,7 @@ const Index = () => {
   const [currentBatchFiles, setCurrentBatchFiles] = useState<File[]>([]);
   const [batchCount, setBatchCount] = useState(1);
   const [categoryDefinitions, setCategoryDefinitions] = useState<CategoryDefinition[]>([]);
+  const [resetKey, setResetKey] = useState(0);
   const { toast } = useToast();
 
   const processBatch = useCallback(async (files: File[], startIdx: number, accumulator: ProcessedDocument[] = [], allFiles: File[] = []) => {
@@ -209,6 +210,7 @@ const Index = () => {
     setBatchCount(1);
     setProcessingProgress({ processed: 0, total: 0 });
     setCategoryDefinitions([]);
+    setResetKey(prev => prev + 1);
   };
 
   const handleTitleChange = (newTitle: string) => {
@@ -352,6 +354,7 @@ const Index = () => {
         {/* Right column - Categories */}
         <div className="space-y-6">
           <CategoryConfig 
+            key={resetKey}
             onApplyCategories={handleApplyCategories}
             isDisabled={isProcessing}
           />

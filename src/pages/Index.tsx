@@ -10,7 +10,7 @@ import CategoryConfig from "@/components/CategoryConfig";
 import { useToast } from "@/components/ui/use-toast";
 import logoCapta from "@/assets/logo-capta.png";
 import cCapta from "@/assets/c-capta.png";
-import type { CategoryDefinition } from "@/types/document";
+import type { FileTimeCategories } from "@/types/document";
 import { applyCategoriestoDocuments } from "@/utils/categoryUtils";
 
 // Process documents in batches to avoid browser freezes with many files
@@ -26,7 +26,7 @@ const Index = () => {
   const [currentBatchDocs, setCurrentBatchDocs] = useState<ProcessedDocument[]>([]);
   const [currentBatchFiles, setCurrentBatchFiles] = useState<File[]>([]);
   const [batchCount, setBatchCount] = useState(1);
-  const [categoryDefinitions, setCategoryDefinitions] = useState<CategoryDefinition[]>([]);
+  const [categoryDefinitions, setCategoryDefinitions] = useState<FileTimeCategories[]>([]);
   const [resetKey, setResetKey] = useState(0);
   const { toast } = useToast();
 
@@ -170,7 +170,7 @@ const Index = () => {
     }
   };
 
-  const handleApplyCategories = (categories: CategoryDefinition[]) => {
+  const handleApplyCategories = (fileTimeCategories: FileTimeCategories[]) => {
     if (processedDocuments.length === 0) {
       toast({
         title: "Sin Documentos",
@@ -181,8 +181,8 @@ const Index = () => {
     }
 
     // Apply categories to all processed documents
-    const docsWithCategories = applyCategoriestoDocuments(processedDocuments, categories);
-    setCategoryDefinitions(categories);
+    const docsWithCategories = applyCategoriestoDocuments(processedDocuments, fileTimeCategories);
+    setCategoryDefinitions(fileTimeCategories);
     setProcessedDocuments(docsWithCategories);
     
     // Update active document if it exists
@@ -195,9 +195,10 @@ const Index = () => {
       }
     }
     
+    const totalRanges = fileTimeCategories.reduce((sum, ftc) => sum + ftc.timeRanges.length, 0);
     toast({
       title: "Categorías Aplicadas",
-      description: `Se aplicaron ${categories.length} categorías a ${docsWithCategories.length} documentos.`,
+      description: `Se aplicaron ${totalRanges} rangos de tiempo a ${fileTimeCategories.length} archivos.`,
     });
   };
 
@@ -327,12 +328,16 @@ const Index = () => {
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="font-medium mb-2">Categorías Configuradas:</h4>
                   <div className="space-y-2 text-sm">
-                    {categoryDefinitions.map((cat, i) => (
-                      <div key={i} className="flex gap-2">
-                        <span className="font-medium">{cat.nombre}:</span>
-                        <span className="text-muted-foreground">
-                          {cat.frasesClave.join(", ")}
-                        </span>
+                    {categoryDefinitions.map((ftc, i) => (
+                      <div key={i} className="flex flex-col gap-1">
+                        <span className="font-medium">{ftc.fileName}</span>
+                        <div className="text-xs text-muted-foreground pl-3">
+                          {ftc.timeRanges.map((range, j) => (
+                            <div key={j}>
+                              • {range.startTime} - {range.endTime}: {range.categoryName}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -357,6 +362,7 @@ const Index = () => {
             key={resetKey}
             onApplyCategories={handleApplyCategories}
             isDisabled={isProcessing}
+            documents={processedDocuments}
           />
         </div>
       </div>

@@ -32,6 +32,17 @@ export interface CategoryDefinition {
   frasesClave: string[];
 }
 
+export interface TimeRange {
+  startTime: string; // HH:MM format
+  endTime: string;   // HH:MM format
+  categoryName: string;
+}
+
+export interface FileTimeCategories {
+  fileName: string;
+  timeRanges: TimeRange[];
+}
+
 export interface FileWithContent {
   file: File;
   content: string;

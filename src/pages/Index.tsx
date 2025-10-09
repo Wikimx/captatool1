@@ -349,25 +349,12 @@ const Index = () => {
           />
         </div>
 
-        {/* Right column - Categories and Document preview */}
+        {/* Right column - Categories */}
         <div className="space-y-6">
           <CategoryConfig 
             onApplyCategories={handleApplyCategories}
             isDisabled={isProcessing}
           />
-          
-          <Separator className="my-6" />
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            {activeDocument ? (
-              <div className="text-center text-muted-foreground">
-                <p>Vista previa del documento activo</p>
-              </div>
-            ) : (
-              <div className="text-center text-muted-foreground">
-                <p>Sube un documento para ver la vista previa</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 

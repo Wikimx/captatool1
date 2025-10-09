@@ -428,7 +428,7 @@ export function extractMetadata(title: string, content: string): DocumentMetadat
   if (upperTitle.includes("GTO")) {
     metadata.plaza = "León";
     metadata.estado = "Guanajuato";
-  } else if (upperTitle.includes("EDOMEX")) {
+  } else if (upperTitle.includes("EDOMEX") || upperTitle.includes("EDO MEX")) {
     metadata.plaza = "Varias";
     metadata.estado = "Estado de México";
   } else {

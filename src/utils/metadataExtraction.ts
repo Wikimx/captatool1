@@ -422,11 +422,22 @@ export function extractMetadata(title: string, content: string): DocumentMetadat
     metadata.nse = extractNSEFromContent(content);
   }
   
-  // Extract Estado based on Plaza
-  if (metadata.plaza) {
-    const upperPlaza = metadata.plaza.toUpperCase();
-    if (mexicanStates[upperPlaza]) {
-      metadata.estado = mexicanStates[upperPlaza];
+  // Special rules for specific state codes in title
+  const upperTitle = title.toUpperCase();
+  
+  if (upperTitle.includes("GTO")) {
+    metadata.plaza = "León";
+    metadata.estado = "Guanajuato";
+  } else if (upperTitle.includes("EDOMEX")) {
+    metadata.plaza = "Varias";
+    metadata.estado = "Estado de México";
+  } else {
+    // Extract Estado based on Plaza (default behavior)
+    if (metadata.plaza) {
+      const upperPlaza = metadata.plaza.toUpperCase();
+      if (mexicanStates[upperPlaza]) {
+        metadata.estado = mexicanStates[upperPlaza];
+      }
     }
   }
   

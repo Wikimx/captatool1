@@ -5,7 +5,6 @@ const MODERADORES = [
   "Yvon Carrillo",
   "Dan Cortés",
   "Carlos Villanueva Avilez",
-  "Karime Galicia",
   "Mario Juárez", 
   "Natalia Rodríguez",
   "Diego De Alba Montes",

@@ -185,7 +185,6 @@ const Index = () => {
       // Clear current batch
       setCurrentBatchDocs([]);
       setCurrentBatchFiles([]);
-      setCategoryDefinitions([]);
     } else {
       // User cancelled, stop processing
       setCurrentBatchDocs([]);
@@ -328,6 +327,22 @@ const Index = () => {
                         )}
                       </ul>
                     </div>
+                    
+                    {categoryDefinitions.length > 0 && (
+                      <div className="mt-4 text-left p-4 bg-muted/50 rounded-lg">
+                        <h3 className="font-medium mb-2">Categorías Configuradas:</h3>
+                        <div className="space-y-2 text-sm">
+                          {categoryDefinitions.map((cat, i) => (
+                            <div key={i} className="flex gap-2">
+                              <span className="font-medium">{cat.nombre}:</span>
+                              <span className="text-muted-foreground">
+                                {cat.frasesClave.join(", ")}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
               </div>
             ) : (
               <div className="text-center text-muted-foreground">

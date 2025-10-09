@@ -28,14 +28,19 @@ const CategoryConfigDialog: React.FC<CategoryConfigDialogProps> = ({
   const [categories, setCategories] = useState<CategoryDefinition[]>([
     { nombre: "", frasesClave: [] }
   ]);
+  
+  // Mantener texto sin procesar para cada categoría
+  const [textInputs, setTextInputs] = useState<string[]>([""]);
 
   const handleAddCategory = () => {
     setCategories([...categories, { nombre: "", frasesClave: [] }]);
+    setTextInputs([...textInputs, ""]);
   };
 
   const handleRemoveCategory = (index: number) => {
     if (categories.length > 1) {
       setCategories(categories.filter((_, i) => i !== index));
+      setTextInputs(textInputs.filter((_, i) => i !== index));
     }
   };
 
@@ -45,9 +50,15 @@ const CategoryConfigDialog: React.FC<CategoryConfigDialogProps> = ({
     setCategories(updated);
   };
 
-  const handleFrasesChange = (index: number, frases: string) => {
+  const handleFrasesChange = (index: number, text: string) => {
+    // Actualizar el texto sin procesar
+    const updatedTexts = [...textInputs];
+    updatedTexts[index] = text;
+    setTextInputs(updatedTexts);
+    
+    // Procesar y actualizar las frases clave
     const updated = [...categories];
-    updated[index].frasesClave = frases
+    updated[index].frasesClave = text
       .split(",")
       .map(f => f.trim())
       .filter(f => f.length > 0);
@@ -94,9 +105,12 @@ const CategoryConfigDialog: React.FC<CategoryConfigDialogProps> = ({
                     <Label htmlFor={`category-phrases-${index}`}>
                       Palabras o Frases Clave (separadas por comas)
                     </Label>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Recuerda poner todo en minúsculas.
+                    </p>
                     <Textarea
                       id={`category-phrases-${index}`}
-                      value={category.frasesClave.join(", ")}
+                      value={textInputs[index] || ""}
                       onChange={(e) => handleFrasesChange(index, e.target.value)}
                       placeholder="Ej: buenos días, vamos a comenzar, primera parte"
                       className="mt-1"

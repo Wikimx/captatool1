@@ -16,6 +16,13 @@ const MODERADORES = [
   "Andrea Chávez"
 ];
 
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Elimina acentos y diacríticos
+};
+
 const isModerador = (participante: string): boolean => {
   return MODERADORES.some(moderador => 
     moderador.toLowerCase() === participante.toLowerCase().trim()
@@ -23,11 +30,12 @@ const isModerador = (participante: string): boolean => {
 };
 
 const findMatchingCategory = (texto: string, categories: CategoryDefinition[]): string | undefined => {
-  const textoLower = texto.toLowerCase();
+  const textoNormalizado = normalizeText(texto);
   
   for (const category of categories) {
     for (const frase of category.frasesClave) {
-      if (textoLower.includes(frase.toLowerCase())) {
+      const fraseNormalizada = normalizeText(frase);
+      if (textoNormalizado.includes(fraseNormalizada)) {
         return category.nombre;
       }
     }

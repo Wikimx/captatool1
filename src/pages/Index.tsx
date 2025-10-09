@@ -4,7 +4,6 @@ import { Separator } from "@/components/ui/separator";
 import { extractTextFromDocx, processDocumentsWithGroupDistribution } from "@/utils/documentUtils";
 import type { ProcessedDocument } from "@/types/document";
 import FileUploader from "@/components/FileUploader";
-import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
 import CategoryConfig from "@/components/CategoryConfig";
@@ -261,13 +260,35 @@ const Index = () => {
             totalCount={processingProgress.total}
             hasProcessedFiles={processedDocuments.length > 0}
           />
+          
+          {processedDocuments.length > 1 && (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+              <div className="text-sm font-medium mb-2">Resumen de Procesamiento por Lotes:</div>
+              <p className="text-sm text-muted-foreground">
+                Se procesaron {processedDocuments.length} documentos
+              </p>
+              
+              {/* Document selector */}
+              <div className="mt-4">
+                <label htmlFor="document-selector" className="text-sm font-medium mb-1 block">
+                  Vista previa del documento:
+                </label>
+                <select 
+                  id="document-selector"
+                  className="w-full p-2 border rounded-md"
+                  onChange={(e) => switchActiveDocument(parseInt(e.target.value))}
+                >
+                  {processedDocuments.map((doc, index) => (
+                    <option key={index} value={index}>
+                      {doc.originalFilename}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          
           <Separator className="my-6" />
-          <TitleEditor 
-            originalTitle={activeDocument?.title || null} 
-            content={activeDocument?.text || null}
-            onTitleChange={handleTitleChange}
-            isDisabled={isProcessing || !activeDocument}
-          />
           <CsvGenerator
             title={currentTitle}
             content={activeDocument?.text || null}
@@ -286,33 +307,6 @@ const Index = () => {
           
           <Separator className="my-6" />
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            {processedDocuments.length > 1 && (
-              <div className="mb-4">
-                <div className="text-sm font-medium mb-2">Resumen de Procesamiento por Lotes:</div>
-                <p className="text-sm text-muted-foreground">
-                  Se procesaron {processedDocuments.length} documentos
-                </p>
-                
-                {/* Document selector */}
-                <div className="mt-4">
-                  <label htmlFor="document-selector" className="text-sm font-medium mb-1 block">
-                    Vista previa del documento:
-                  </label>
-                  <select 
-                    id="document-selector"
-                    className="w-full p-2 border rounded-md"
-                    onChange={(e) => switchActiveDocument(parseInt(e.target.value))}
-                  >
-                    {processedDocuments.map((doc, index) => (
-                      <option key={index} value={index}>
-                        {doc.originalFilename}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-            
             {activeDocument ? (
               <div className="text-center">
                 <p className="text-xl font-semibold mb-2">{currentTitle}</p>

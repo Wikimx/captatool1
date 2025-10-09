@@ -142,7 +142,12 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
                   <TableHeader>
                     <TableRow className="bg-muted/50">
                       <TableHead className="w-1/3 font-semibold">Categoría</TableHead>
-                      <TableHead className="font-semibold">Palabras o frases clave</TableHead>
+                      <TableHead className="font-semibold">
+                        Palabras o frases clave
+                        <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                          Separar por comas
+                        </span>
+                      </TableHead>
                       <TableHead className="w-[60px]"></TableHead>
                     </TableRow>
                   </TableHeader>

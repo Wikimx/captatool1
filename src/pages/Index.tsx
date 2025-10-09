@@ -7,7 +7,7 @@ import FileUploader from "@/components/FileUploader";
 import TitleEditor from "@/components/TitleEditor";
 import CsvGenerator from "@/components/CsvGenerator";
 import YearInputDialog from "@/components/YearInputDialog";
-import CategoryConfigDialog from "@/components/CategoryConfigDialog";
+import CategoryConfig from "@/components/CategoryConfig";
 import { useToast } from "@/components/ui/use-toast";
 import logoCapta from "@/assets/logo-capta.png";
 import cCapta from "@/assets/c-capta.png";
@@ -24,7 +24,6 @@ const Index = () => {
   const [processedDocuments, setProcessedDocuments] = useState<ProcessedDocument[]>([]);
   const [currentTitle, setCurrentTitle] = useState<string | null>(null);
   const [showYearDialog, setShowYearDialog] = useState(false);
-  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [currentBatchDocs, setCurrentBatchDocs] = useState<ProcessedDocument[]>([]);
   const [currentBatchFiles, setCurrentBatchFiles] = useState<File[]>([]);
   const [batchCount, setBatchCount] = useState(1);
@@ -73,7 +72,7 @@ const Index = () => {
         setCurrentBatchDocs(documentsWithGroupDistribution);
         setCurrentBatchFiles(allFiles);
         
-        // Show year dialog first
+        // Show year dialog
         setShowYearDialog(true);
         
         toast({
@@ -109,7 +108,7 @@ const Index = () => {
         setCurrentBatchFiles(files);
         setCurrentTitle(processedWithGroup[0].title);
         
-        // Show year dialog first
+        // Show year dialog
         setShowYearDialog(true);
         
         toast({
@@ -134,6 +133,7 @@ const Index = () => {
 
   const handleYearDialogClose = (year?: string) => {
     setShowYearDialog(false);
+    setIsProcessing(false);
     
     if (year && currentBatchDocs.length > 0) {
       // Add year to documents metadata
@@ -145,30 +145,8 @@ const Index = () => {
         }
       }));
       
-      // Store the documents with year for category processing
-      setCurrentBatchDocs(docsWithYear);
-      
-      // Now show category dialog
-      setShowCategoryDialog(true);
-    } else {
-      // User cancelled, stop processing
-      setIsProcessing(false);
-      setCurrentBatchDocs([]);
-      setCurrentBatchFiles([]);
-    }
-  };
-
-  const handleCategoryDialogClose = (categories?: CategoryDefinition[]) => {
-    setShowCategoryDialog(false);
-    setIsProcessing(false);
-    
-    if (categories && currentBatchDocs.length > 0) {
-      // Apply categories to documents
-      const docsWithCategories = applyCategoriestoDocuments(currentBatchDocs, categories);
-      setCategoryDefinitions(categories);
-      
       // Add batch information to the documents
-      const updatedBatchDocs = docsWithCategories.map(doc => ({
+      const updatedBatchDocs = docsWithYear.map(doc => ({
         ...doc,
         metadata: {
           ...doc.metadata,
@@ -176,7 +154,7 @@ const Index = () => {
         }
       }));
       
-      // Add these documents to the main processed list
+      // Add these documents to the main processed list (without categories yet)
       setProcessedDocuments(prevDocs => [...prevDocs, ...updatedBatchDocs]);
       
       // Increment batch counter for the next batch
@@ -192,6 +170,37 @@ const Index = () => {
     }
   };
 
+  const handleApplyCategories = (categories: CategoryDefinition[]) => {
+    if (processedDocuments.length === 0) {
+      toast({
+        title: "Sin Documentos",
+        description: "Primero debes cargar documentos antes de aplicar categorías.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Apply categories to all processed documents
+    const docsWithCategories = applyCategoriestoDocuments(processedDocuments, categories);
+    setCategoryDefinitions(categories);
+    setProcessedDocuments(docsWithCategories);
+    
+    // Update active document if it exists
+    if (activeDocument) {
+      const updatedActiveDoc = docsWithCategories.find(
+        doc => doc.originalFilename === activeDocument.originalFilename
+      );
+      if (updatedActiveDoc) {
+        setActiveDocument(updatedActiveDoc);
+      }
+    }
+    
+    toast({
+      title: "Categorías Aplicadas",
+      description: `Se aplicaron ${categories.length} categorías a ${docsWithCategories.length} documentos.`,
+    });
+  };
+
   const handleReset = () => {
     setProcessedDocuments([]);
     setActiveDocument(null);
@@ -200,6 +209,7 @@ const Index = () => {
     setCurrentBatchFiles([]);
     setBatchCount(1);
     setProcessingProgress({ processed: 0, total: 0 });
+    setCategoryDefinitions([]);
   };
 
   const handleTitleChange = (newTitle: string) => {
@@ -240,9 +250,9 @@ const Index = () => {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - Upload and export */}
-        <div className="lg:col-span-1 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left column - Upload, categories, and export */}
+        <div className="space-y-6">
           <FileUploader 
             onFileUpload={handleFileUpload} 
             onReset={handleReset}
@@ -251,6 +261,13 @@ const Index = () => {
             totalCount={processingProgress.total}
             hasProcessedFiles={processedDocuments.length > 0}
           />
+          <Separator className="my-6" />
+          
+          <CategoryConfig 
+            onApplyCategories={handleApplyCategories}
+            isDisabled={isProcessing}
+          />
+          
           <Separator className="my-6" />
           <TitleEditor 
             originalTitle={activeDocument?.title || null} 
@@ -268,7 +285,7 @@ const Index = () => {
         </div>
 
         {/* Right column - Document preview */}
-        <div className="lg:col-span-2">
+        <div>
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             {processedDocuments.length > 1 && (
               <div className="mb-4">
@@ -359,13 +376,6 @@ const Index = () => {
           <p>CAPTA • Herramientas de Procesamiento de Documentos</p>
         </div>
       </footer>
-
-      {/* Category config dialog */}
-      <CategoryConfigDialog
-        isOpen={showCategoryDialog}
-        onClose={handleCategoryDialogClose}
-        onConfirm={handleCategoryDialogClose}
-      />
 
       {/* Year input dialog */}
       <YearInputDialog 

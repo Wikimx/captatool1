@@ -1,6 +1,51 @@
-import { ProcessedDocument, FileTimeCategories, TimeRange } from "@/types/document";
+import { ProcessedDocument, CategoryDefinition, FileTimeCategories, TimeRange, CategoryConfiguration } from "@/types/document";
 
-// Convert HH:MM time string to minutes since midnight for comparison
+const MODERADORES = [
+  "Yvone Carrillo",
+  "Yvon Carrillo",
+  "Dan Cortés",
+  "Carlos Villanueva Avilez",
+  "Karime Galicia",
+  "Mario Juárez", 
+  "Natalia Rodríguez",
+  "Diego De Alba Montes",
+  "Daniela RK",
+  "Jaime Ruiz",
+  "Joaquín García Luna Pérez",
+  "Daniel Behn",
+  "Judith B.",
+  "Andrea Chávez"
+];
+
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Remove accents
+};
+
+const isModerador = (participante: string): boolean => {
+  return MODERADORES.some(moderador => 
+    moderador.toLowerCase() === participante.toLowerCase().trim()
+  );
+};
+
+const findMatchingCategory = (texto: string, categories: CategoryDefinition[]): string | undefined => {
+  const textoNormalizado = normalizeText(texto);
+  
+  for (const category of categories) {
+    for (const frase of category.frasesClave) {
+      const fraseNormalizada = normalizeText(frase);
+      if (textoNormalizado.includes(fraseNormalizada)) {
+        return category.nombre;
+      }
+    }
+  }
+  
+  return undefined;
+};
+
+// Time-based categorization helpers
 const timeToMinutes = (timeStr: string): number => {
   if (!timeStr || !timeStr.includes(':')) return 0;
   
@@ -8,7 +53,6 @@ const timeToMinutes = (timeStr: string): number => {
   return hours * 60 + minutes;
 };
 
-// Check if a time falls within a range
 const isTimeInRange = (time: string, range: TimeRange): boolean => {
   const timeMinutes = timeToMinutes(time);
   const startMinutes = timeToMinutes(range.startTime);
@@ -17,7 +61,6 @@ const isTimeInRange = (time: string, range: TimeRange): boolean => {
   return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
 };
 
-// Find which category a participation belongs to based on its time
 const findCategoryForTime = (time: string, timeRanges: TimeRange[]): string => {
   for (const range of timeRanges) {
     if (isTimeInRange(time, range)) {
@@ -27,12 +70,65 @@ const findCategoryForTime = (time: string, timeRanges: TimeRange[]): string => {
   return "Sin clasificar";
 };
 
-export function applyCategoriestoDocuments(
+// Keyword-based categorization
+function applyKeywordCategories(
+  documents: ProcessedDocument[],
+  categories: CategoryDefinition[]
+): ProcessedDocument[] {
+  if (categories.length === 0) {
+    return documents.map(doc => ({
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        participaciones: doc.metadata.participaciones?.map(p => ({
+          ...p,
+          categoria: "Sin clasificar"
+        }))
+      }
+    }));
+  }
+
+  return documents.map(doc => {
+    if (!doc.metadata.participaciones || doc.metadata.participaciones.length === 0) {
+      return doc;
+    }
+
+    let currentCategory = "Sin clasificar";
+    
+    const participacionesWithCategories = doc.metadata.participaciones.map(participacion => {
+      const participante = participacion.participante || "";
+      const texto = participacion.texto || "";
+      
+      // If moderator, search for new category
+      if (isModerador(participante)) {
+        const matchedCategory = findMatchingCategory(texto, categories);
+        if (matchedCategory) {
+          currentCategory = matchedCategory;
+        }
+      }
+      
+      return {
+        ...participacion,
+        categoria: currentCategory
+      };
+    });
+
+    return {
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        participaciones: participacionesWithCategories
+      }
+    };
+  });
+}
+
+// Time-based categorization
+function applyTimeCategories(
   documents: ProcessedDocument[],
   fileTimeCategories: FileTimeCategories[]
 ): ProcessedDocument[] {
   if (fileTimeCategories.length === 0) {
-    // If no categories, mark all as "Sin clasificar"
     return documents.map(doc => ({
       ...doc,
       metadata: {
@@ -56,7 +152,7 @@ export function applyCategoriestoDocuments(
     );
 
     if (!fileConfig || fileConfig.timeRanges.length === 0) {
-      // No configuration for this file, mark as "Sin clasificar"
+      // No configuration for this file
       return {
         ...doc,
         metadata: {
@@ -88,4 +184,28 @@ export function applyCategoriestoDocuments(
       }
     };
   });
+}
+
+// Main function that routes to the appropriate categorization method
+export function applyCategoriestoDocuments(
+  documents: ProcessedDocument[],
+  config: CategoryConfiguration
+): ProcessedDocument[] {
+  if (config.method === 'keywords' && config.keywordCategories) {
+    return applyKeywordCategories(documents, config.keywordCategories);
+  } else if (config.method === 'time' && config.timeCategories) {
+    return applyTimeCategories(documents, config.timeCategories);
+  }
+  
+  // Default: mark all as "Sin clasificar"
+  return documents.map(doc => ({
+    ...doc,
+    metadata: {
+      ...doc.metadata,
+      participaciones: doc.metadata.participaciones?.map(p => ({
+        ...p,
+        categoria: "Sin clasificar"
+      }))
+    }
+  }));
 }

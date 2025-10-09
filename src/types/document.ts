@@ -43,6 +43,12 @@ export interface FileTimeCategories {
   timeRanges: TimeRange[];
 }
 
+export interface CategoryConfiguration {
+  method: 'keywords' | 'time';
+  keywordCategories?: CategoryDefinition[];
+  timeCategories?: FileTimeCategories[];
+}
+
 export interface FileWithContent {
   file: File;
   content: string;

@@ -251,7 +251,7 @@ const Index = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column - Upload, categories, and export */}
+        {/* Left column - Upload and export */}
         <div className="space-y-6">
           <FileUploader 
             onFileUpload={handleFileUpload} 
@@ -261,13 +261,6 @@ const Index = () => {
             totalCount={processingProgress.total}
             hasProcessedFiles={processedDocuments.length > 0}
           />
-          <Separator className="my-6" />
-          
-          <CategoryConfig 
-            onApplyCategories={handleApplyCategories}
-            isDisabled={isProcessing}
-          />
-          
           <Separator className="my-6" />
           <TitleEditor 
             originalTitle={activeDocument?.title || null} 
@@ -284,8 +277,14 @@ const Index = () => {
           />
         </div>
 
-        {/* Right column - Document preview */}
-        <div>
+        {/* Right column - Categories and Document preview */}
+        <div className="space-y-6">
+          <CategoryConfig 
+            onApplyCategories={handleApplyCategories}
+            isDisabled={isProcessing}
+          />
+          
+          <Separator className="my-6" />
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             {processedDocuments.length > 1 && (
               <div className="mb-4">

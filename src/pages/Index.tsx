@@ -290,18 +290,36 @@ const Index = () => {
           
           {activeDocument && (
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
-              <h3 className="font-medium mb-3">Metadatos Extraídos:</h3>
-              <ul className="text-sm space-y-1">
-                <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detectado"}</li>
-                <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detectado"}</li>
-                <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
-                <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
-                <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
-                <li><strong>Fecha de sesiones:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
-                {activeDocument.metadata.distributionSource && (
-                  <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
+              <div className="text-center mb-4">
+                <p className="text-xl font-semibold mb-2">{currentTitle}</p>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Archivo original: {activeDocument.originalFilename}
+                </p>
+                <p className="text-muted-foreground">
+                  {activeDocument.metadata.wordCount} palabras • 
+                  {" "}{activeDocument.metadata.characterCount} caracteres
+                </p>
+                {activeDocument.metadata.participaciones && (
+                  <p className="text-muted-foreground mt-1">
+                    {activeDocument.metadata.participaciones.length} participaciones detectadas
+                  </p>
                 )}
-              </ul>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h3 className="font-medium mb-3">Metadatos Extraídos:</h3>
+                <ul className="text-sm space-y-1">
+                  <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detectado"}</li>
+                  <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detectado"}</li>
+                  <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
+                  <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
+                  <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
+                  <li><strong>Fecha de sesiones:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
+                  {activeDocument.metadata.distributionSource && (
+                    <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
+                  )}
+                </ul>
+              </div>
               
               {categoryDefinitions.length > 0 && (
                 <div className="mt-4 pt-4 border-t">
@@ -341,20 +359,8 @@ const Index = () => {
           <Separator className="my-6" />
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             {activeDocument ? (
-              <div className="text-center">
-                <p className="text-xl font-semibold mb-2">{currentTitle}</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Archivo original: {activeDocument.originalFilename}
-                </p>
-                <p className="text-muted-foreground">
-                  {activeDocument.metadata.wordCount} palabras • 
-                  {" "}{activeDocument.metadata.characterCount} caracteres
-                </p>
-                {activeDocument.metadata.participaciones && (
-                  <p className="text-muted-foreground mt-2">
-                    {activeDocument.metadata.participaciones.length} participaciones detectadas
-                  </p>
-                )}
+              <div className="text-center text-muted-foreground">
+                <p>Vista previa del documento activo</p>
               </div>
             ) : (
               <div className="text-center text-muted-foreground">

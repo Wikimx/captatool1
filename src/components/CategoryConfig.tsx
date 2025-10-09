@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Plus, Table } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Trash2, Plus, Table as TableIcon } from "lucide-react";
 import { CategoryDefinition } from "@/types/document";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -105,8 +106,8 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
         <Tabs defaultValue="bulk" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="bulk">
-              <Table className="h-4 w-4 mr-2" />
-              Copiar/Pegar desde Excel
+              <TableIcon className="h-4 w-4 mr-2" />
+              Tabla Excel
             </TabsTrigger>
             <TabsTrigger value="manual">
               <Plus className="h-4 w-4 mr-2" />
@@ -115,30 +116,84 @@ const CategoryConfig: React.FC<CategoryConfigProps> = ({
           </TabsList>
           
           <TabsContent value="bulk" className="space-y-4">
-            <div>
-              <Label htmlFor="bulk-input">
-                Pega aquí tus datos desde Excel o tabla
-              </Label>
-              <p className="text-xs text-muted-foreground mt-1 mb-2">
-                Formato: Nombre de Categoría [TAB o |] palabra1, palabra2, palabra3
-              </p>
-              <div className="mb-2 p-2 bg-muted/50 rounded text-xs font-mono">
-                <div className="text-muted-foreground">Ejemplo:</div>
-                <div>Introducción | buenos días, vamos a comenzar, primera parte</div>
-                <div>Desarrollo | ahora vamos a hablar de, siguiente tema</div>
-                <div>Cierre | muchas gracias, hasta luego, nos vemos</div>
+            <div className="space-y-3">
+              <div>
+                <Label>Tabla de Categorías</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Edita directamente en la tabla o copia/pega desde Excel
+                </p>
               </div>
-              <Textarea
-                id="bulk-input"
-                value={bulkInput}
-                onChange={(e) => handleBulkInputChange(e.target.value)}
-                placeholder="Introducción	buenos días, vamos a comenzar, primera parte"
-                className="min-h-[150px] font-mono text-sm"
+              
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="w-1/3 font-semibold">Categoría</TableHead>
+                      <TableHead className="font-semibold">Palabras o frases clave</TableHead>
+                      <TableHead className="w-[60px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Fila de ejemplo */}
+                    <TableRow className="bg-muted/20">
+                      <TableCell className="font-mono text-xs text-muted-foreground italic">
+                        Introducción
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground italic">
+                        buenos días, vamos a comenzar, primera parte
+                      </TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                    
+                    {/* Filas editables */}
+                    {categories.map((category, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="p-2">
+                          <Input
+                            value={category.nombre}
+                            onChange={(e) => handleCategoryNameChange(index, e.target.value)}
+                            placeholder="Nombre categoría"
+                            className="h-9"
+                            disabled={isDisabled}
+                          />
+                        </TableCell>
+                        <TableCell className="p-2">
+                          <Input
+                            value={textInputs[index] || ""}
+                            onChange={(e) => handleFrasesChange(index, e.target.value)}
+                            placeholder="palabra1, palabra2, palabra3"
+                            className="h-9"
+                            disabled={isDisabled}
+                          />
+                        </TableCell>
+                        <TableCell className="p-2">
+                          {categories.length > 1 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleRemoveCategory(index)}
+                              className="h-9 w-9 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={isDisabled}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={handleAddCategory}
+                className="w-full"
                 disabled={isDisabled}
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                💡 Tip: Copia directamente desde Excel (dos columnas) o separa nombre y frases con el símbolo |
-              </p>
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar Fila
+              </Button>
             </div>
           </TabsContent>
           

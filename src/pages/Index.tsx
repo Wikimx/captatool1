@@ -288,6 +288,39 @@ const Index = () => {
             </div>
           )}
           
+          {activeDocument && (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+              <h3 className="font-medium mb-3">Metadatos Extraídos:</h3>
+              <ul className="text-sm space-y-1">
+                <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detectado"}</li>
+                <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detectado"}</li>
+                <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
+                <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
+                <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
+                <li><strong>Fecha de sesiones:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
+                {activeDocument.metadata.distributionSource && (
+                  <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
+                )}
+              </ul>
+              
+              {categoryDefinitions.length > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="font-medium mb-2">Categorías Configuradas:</h4>
+                  <div className="space-y-2 text-sm">
+                    {categoryDefinitions.map((cat, i) => (
+                      <div key={i} className="flex gap-2">
+                        <span className="font-medium">{cat.nombre}:</span>
+                        <span className="text-muted-foreground">
+                          {cat.frasesClave.join(", ")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
           <Separator className="my-6" />
           <CsvGenerator
             title={currentTitle}
@@ -322,37 +355,6 @@ const Index = () => {
                     {activeDocument.metadata.participaciones.length} participaciones detectadas
                   </p>
                 )}
-                
-                    <div className="mt-4 text-left p-4 bg-muted/50 rounded-lg">
-                      <h3 className="font-medium mb-2">Metadatos Extraídos:</h3>
-                      <ul className="text-sm space-y-1">
-                        <li><strong>Grupo:</strong> {activeDocument.metadata.grupo || "No detectado"}</li>
-                        <li><strong>Plaza:</strong> {activeDocument.metadata.plaza || "No detectado"}</li>
-                        <li><strong>Edades:</strong> {activeDocument.metadata.edades || "No detectado"}</li>
-                        <li><strong>NSE:</strong> {activeDocument.metadata.nse || "No detectado"}</li>
-                        <li><strong>Estado:</strong> {activeDocument.metadata.estado || "No detectado"}</li>
-                        <li><strong>Fecha de sesiones:</strong> {activeDocument.metadata.creationDate || "No detectado"}</li>
-                        {activeDocument.metadata.distributionSource && (
-                          <li><strong>Fuente:</strong> {activeDocument.metadata.distributionSource}</li>
-                        )}
-                      </ul>
-                    </div>
-                    
-                    {categoryDefinitions.length > 0 && (
-                      <div className="mt-4 text-left p-4 bg-muted/50 rounded-lg">
-                        <h3 className="font-medium mb-2">Categorías Configuradas:</h3>
-                        <div className="space-y-2 text-sm">
-                          {categoryDefinitions.map((cat, i) => (
-                            <div key={i} className="flex gap-2">
-                              <span className="font-medium">{cat.nombre}:</span>
-                              <span className="text-muted-foreground">
-                                {cat.frasesClave.join(", ")}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
               </div>
             ) : (
               <div className="text-center text-muted-foreground">

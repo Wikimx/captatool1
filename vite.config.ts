@@ -5,7 +5,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/capta-tool-1/',
+  base: mode === 'production' ? '/capta-tool-1/' : '/',
   server: {
     host: "::",
     port: 8080,

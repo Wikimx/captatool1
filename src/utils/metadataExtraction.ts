@@ -2,7 +2,7 @@
 import { DocumentMetadata, Participacion } from '@/types/document';
 
 // Function to normalize time format to HH:MM:SS
-const normalizeTimeFormat = (time: string): string => {
+const normalizeTimeFormatSmart = (time: string): string => {
   if (!time) return "";
   
   // Remove milliseconds if present (e.g., "14:30:45.123" -> "14:30:45")
@@ -16,25 +16,29 @@ const normalizeTimeFormat = (time: string): string => {
     const minutes = parts[0].padStart(2, '0');
     return `00:${minutes}:00`;
   } else if (parts.length === 2) {
-    // MM:SS or HH:MM format
+    // MM:SS or HH:MM format - need to determine intelligently
     const firstPart = parseInt(parts[0]);
-    const secondPart = parts[1].padStart(2, '0');
+    const secondPart = parseInt(parts[1]);
     
+    // If first part > 59, it's definitely MM:SS (minutes > 59)
     if (firstPart > 59) {
-      // This is MM:SS format where minutes > 59, convert to HH:MM:SS
       const hours = Math.floor(firstPart / 60);
       const minutes = firstPart % 60;
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondPart}`;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    
+    // If first part <= 59, we need to determine if it's MM:SS or HH:MM
+    // Strategy: if second part > 59, it's likely HH:MM (minutes > 59 is rare)
+    // Otherwise, assume it's MM:SS for early times (common in session start)
+    if (secondPart > 59) {
+      // Likely HH:MM format
+      return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
     } else {
-      // This could be MM:SS (minutes:seconds) or HH:MM (hours:minutes)
-      // We need to determine based on context - if it's likely MM:SS, treat as such
-      // For now, assume it's MM:SS if the first part is <= 59
-      const hours = 0;
-      const minutes = firstPart;
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secondPart}`;
+      // Likely MM:SS format (most common at session start)
+      return `00:${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
     }
   } else if (parts.length === 3) {
-    // HH:MM:SS format (e.g., "14:30:45" -> "14:30:45")
+    // HH:MM:SS format - just normalize padding
     const hours = parts[0].padStart(2, '0');
     const minutes = parts[1].padStart(2, '0');
     const seconds = parts[2].padStart(2, '0');
@@ -489,65 +493,53 @@ export function extractMetadata(title: string, content: string): DocumentMetadat
   console.log("🔍 Extracting participations from content...");
   console.log("📄 Content preview (first 500 chars):", content.substring(0, 500));
   
-  // Enhanced regex patterns for participation extraction
-  const participacionPatterns = [
-    // Pattern 1: HH:MM:SS Name: text (full format)
-    /(\d{1,2}:\d{2}:\d{2})\s+([^:]+?):\s*(.+?)(?=\n\d{1,2}:\d{2}|\n\n|$)/gs,
-    // Pattern 2: MM:SS Name: text (minutes:seconds format - most common at start)
-    // This pattern specifically looks for MM:SS where MM can be > 59
-    /(\d{1,3}:\d{2})\s+([^:]+?):\s*(.+?)(?=\n\d{1,2}:\d{2}|\n\n|$)/gs,
-    // Pattern 3: HH:MM Name: text (fallback for older format)
-    /(\d{1,2}:\d{2})\s+([^:]+?):\s*(.+?)(?=\n\d{1,2}:\d{2}|\n\n|$)/gs
-  ];
+  // Single comprehensive regex pattern that handles all time formats
+  // This pattern captures time in any format and normalizes it properly
+  const participacionRegex = /(\d{1,2}:\d{2}(?::\d{2})?)\s+([^:]+?):\s*(.+?)(?=\n\d{1,2}:\d{2}|\n\n|$)/gs;
   
-  // Try all patterns and combine results
-  for (let i = 0; i < participacionPatterns.length; i++) {
-    const regex = participacionPatterns[i];
-    regex.lastIndex = 0;
-    let match;
-    let patternMatches = 0;
+  console.log(`🔍 Using comprehensive pattern: ${participacionRegex}`);
+  
+  let match;
+  let totalMatches = 0;
+  
+  while ((match = participacionRegex.exec(content)) !== null) {
+    const timeStr = match[1];
+    const participantName = match[2].trim();
+    const participationText = match[3].trim();
     
-    console.log(`🔍 Testing pattern ${i + 1}: ${regex}`);
+    console.log(`🎯 Found match: "${timeStr}" - "${participantName}" - "${participationText.substring(0, 50)}..."`);
     
-    while ((match = regex.exec(content)) !== null) {
-      const timeStr = match[1];
-      const participantName = match[2].trim();
-      const participationText = match[3].trim();
-      
-      console.log(`🎯 Found match: "${timeStr}" - "${participantName}" - "${participationText.substring(0, 50)}..."`);
-      
-      if (!isValidParticipant(participantName)) {
-        console.log(`❌ Invalid participant: "${participantName}"`);
-        continue;
-      }
-      
-      // Normalize time format to HH:MM:SS
-      let formattedTime = normalizeTimeFormat(timeStr);
-      
-      // Debug log for time conversion
-      console.log(`🕐 Time conversion: "${timeStr}" -> "${formattedTime}"`);
-      
-      // Check if this participation already exists (avoid duplicates)
-      const existingParticipation = metadata.participaciones.find(p => 
-        p.hora === formattedTime && 
-        p.participante === participantName && 
-        p.texto === participationText
-      );
-      
-      if (!existingParticipation) {
-        metadata.participaciones.push({
-          hora: formattedTime,
-          participante: participantName,
-          texto: participationText
-        });
-        patternMatches++;
-      } else {
-        console.log(`⚠️ Duplicate participation skipped`);
-      }
+    if (!isValidParticipant(participantName)) {
+      console.log(`❌ Invalid participant: "${participantName}"`);
+      continue;
     }
     
-    console.log(`📊 Pattern ${i + 1} matches: ${patternMatches}`);
+    // Determine time format and normalize accordingly
+    let formattedTime = normalizeTimeFormatSmart(timeStr);
+    
+    // Debug log for time conversion
+    console.log(`🕐 Time conversion: "${timeStr}" -> "${formattedTime}"`);
+    
+    // Check if this participation already exists (avoid duplicates)
+    const existingParticipation = metadata.participaciones.find(p => 
+      p.hora === formattedTime && 
+      p.participante === participantName && 
+      p.texto === participationText
+    );
+    
+    if (!existingParticipation) {
+      metadata.participaciones.push({
+        hora: formattedTime,
+        participante: participantName,
+        texto: participationText
+      });
+      totalMatches++;
+    } else {
+      console.log(`⚠️ Duplicate participation skipped`);
+    }
   }
+  
+  console.log(`📊 Total matches found: ${totalMatches}`);
   
   console.log(`🎯 Total participaciones extracted: ${metadata.participaciones.length}`);
   

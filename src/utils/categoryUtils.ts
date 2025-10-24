@@ -49,8 +49,18 @@ const findMatchingCategory = (texto: string, categories: CategoryDefinition[]): 
 const timeToMinutes = (timeStr: string): number => {
   if (!timeStr || !timeStr.includes(':')) return 0;
   
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  return hours * 60 + minutes;
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length === 2) {
+    // HH:MM format
+    const [hours, minutes] = parts;
+    return hours * 60 + minutes;
+  } else if (parts.length === 3) {
+    // HH:MM:SS format
+    const [hours, minutes, seconds] = parts;
+    return hours * 60 + minutes + seconds / 60;
+  }
+  
+  return 0;
 };
 
 const isTimeInRange = (time: string, range: TimeRange): boolean => {

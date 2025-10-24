@@ -16,7 +16,7 @@ interface CsvGeneratorProps {
   batchCount?: number;
 }
 
-// Function to normalize time format to HH:MM
+// Function to normalize time format to HH:MM:SS
 const normalizeTimeFormat = (time: string): string => {
   if (!time) return "";
   
@@ -26,11 +26,21 @@ const normalizeTimeFormat = (time: string): string => {
   // Split by colon
   const parts = timeWithoutMs.split(':');
   
-  // If we have HH:MM:SS format, keep only HH:MM
-  if (parts.length >= 2) {
+  if (parts.length === 1) {
+    // Only minutes (e.g., "45" -> "00:45:00")
+    const minutes = parts[0].padStart(2, '0');
+    return `00:${minutes}:00`;
+  } else if (parts.length === 2) {
+    // HH:MM format (e.g., "14:30" -> "14:30:00")
     const hours = parts[0].padStart(2, '0');
     const minutes = parts[1].padStart(2, '0');
-    return `${hours}:${minutes}`;
+    return `${hours}:${minutes}:00`;
+  } else if (parts.length === 3) {
+    // HH:MM:SS format (e.g., "14:30:45" -> "14:30:45")
+    const hours = parts[0].padStart(2, '0');
+    const minutes = parts[1].padStart(2, '0');
+    const seconds = parts[2].padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
   }
   
   // Return as is if format is unexpected
@@ -73,7 +83,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const generateParticipacionesCsv = (processedDocuments: ProcessedDocument[], csvConfigs?: CsvConfig[], creationYear?: string) => {
+  const generateParticipacionesCsv = (processedDocuments: ProcessedDocument[], csvConfigs?: CsvConfig[], creationMonth?: string, creationYear?: string) => {
     if (processedDocuments.length === 0) {
       return [];
     }
@@ -83,6 +93,12 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
     processedDocuments.forEach((doc) => {
       const { metadata } = doc;
       
+      // Debug log to see what metadata is available
+      console.log("🔍 Processing document for CSV:", doc.originalFilename, {
+        metadata,
+        docConfig: csvConfigs?.find(config => config.documentId === doc.originalFilename)
+      });
+      
       const docConfig = csvConfigs?.find(config => config.documentId === doc.originalFilename);
       
       const grupo = docConfig?.grupo || metadata.grupo || "";
@@ -90,7 +106,12 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
       const nse = docConfig?.nse || metadata.nse || "";
       const edades = docConfig?.edades || metadata.edades || "";
       const estado = docConfig?.estado || metadata.estado || "";
+      const mes = creationMonth || "";
       const creationDate = creationYear || metadata.creationDate || new Date().getFullYear().toString();
+      
+      console.log("📊 Final values for CSV row:", {
+        grupo, plaza, nse, edades, estado, mes, creationDate
+      });
       
       if (!metadata.participaciones || metadata.participaciones.length === 0) {
         rows.push({
@@ -99,12 +120,12 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
           Estado: estado,
           Edades: edades,
           NSE: nse,
+          Mes: mes,
           "Fecha de sesiones": creationDate,
           Hora: "",
           Participante: "",
           "Rol": "",
           Participación: "",
-          "Participación minúsculas": "",
           "Archivo fuente": doc.title
         });
       } else {
@@ -115,13 +136,13 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
             Estado: estado,
             Edades: edades,
             NSE: nse,
+            Mes: mes,
             "Fecha de sesiones": creationDate,
             Hora: normalizeTimeFormat(p.hora || ""),
             Participante: p.participante || "",
             "Rol": getRolParticipante(p.participante || ""),
             Categoría: p.categoria || "Sin clasificar",
             Participación: p.texto || "",
-            "Participación minúsculas": (p.texto || "").toLowerCase(),
             "Archivo fuente": doc.title
           });
         });
@@ -150,12 +171,12 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
     setIsDialogOpen(false);
   };
 
-  const handleConfirmConfig = (configs: CsvConfig[], creationYear: string) => {
-    downloadCsv(configs, creationYear);
+  const handleConfirmConfig = (configs: CsvConfig[], creationMonth: string, creationYear: string) => {
+    downloadCsv(configs, creationMonth, creationYear);
     setIsDialogOpen(false);
   };
 
-  const downloadCsv = (csvConfigs?: CsvConfig[], creationYear?: string) => {
+  const downloadCsv = (csvConfigs?: CsvConfig[], creationMonth?: string, creationYear?: string) => {
     const docsToProcess = documents;
     
     if (docsToProcess.length === 0) {
@@ -164,7 +185,7 @@ const CsvGenerator: React.FC<CsvGeneratorProps> = ({
 
     setIsGenerating(true);
     try {
-      const csvData = generateParticipacionesCsv(docsToProcess, csvConfigs, creationYear);
+      const csvData = generateParticipacionesCsv(docsToProcess, csvConfigs, creationMonth, creationYear);
       
       if (csvData.length === 0) {
         throw new Error("No data to export");

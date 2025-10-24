@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProcessedDocument } from "@/utils/documentUtils";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,7 +12,7 @@ import { Label } from "@/components/ui/label";
 interface CsvConfigDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (configs: CsvConfig[], creationYear: string) => void;
+  onConfirm: (configs: CsvConfig[], creationMonth: string, creationYear: string) => void;
   documents: ProcessedDocument[];
   batchCount: number;
 }
@@ -51,6 +52,7 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
   batchCount
 }) => {
   const [configs, setConfigs] = useState<CsvConfig[]>([]);
+  const [creationMonth, setCreationMonth] = useState<string>("Enero");
   const [creationYear, setCreationYear] = useState<string>(new Date().getFullYear().toString());
   const [dragStartData, setDragStartData] = useState<{
     field: string;
@@ -119,6 +121,16 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
       const newConfigs = documents.map(doc => {
         const initialPlaza = doc.metadata?.plaza || "";
         const autoEstado = getEstadoFromPlaza(initialPlaza);
+        
+        // Debug log to see what metadata is available
+        console.log("🔍 Document metadata for", doc.originalFilename, ":", {
+          grupo: doc.metadata?.grupo,
+          plaza: doc.metadata?.plaza,
+          nse: doc.metadata?.nse,
+          edades: doc.metadata?.edades,
+          estado: doc.metadata?.estado,
+          fullMetadata: doc.metadata
+        });
         
         return {
           documentId: doc.originalFilename,
@@ -215,7 +227,7 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
   };
 
   const handleConfirm = () => {
-    onConfirm(configs, creationYear);
+    onConfirm(configs, creationMonth, creationYear);
   };
 
   const groupedDocuments = groupDocumentsByPlaza(documents);
@@ -304,17 +316,43 @@ const CsvConfigDialog: React.FC<CsvConfigDialogProps> = ({
         </DialogHeader>
 
         <div className="mb-4">
-          <Label htmlFor="creationYear">Fecha de sesiones:</Label>
-          <Input
-            id="creationYear"
-            type="text"
-            value={creationYear}
-            onChange={(e) => setCreationYear(e.target.value)}
-            placeholder="Marzo 2025"
-            className="max-w-xs"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Este valor se usará para la columna "Fecha de sesiones" en todos los documentos de este lote.
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="creationMonth">Mes:</Label>
+              <Select value={creationMonth} onValueChange={setCreationMonth}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona el mes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Enero">Enero</SelectItem>
+                  <SelectItem value="Febrero">Febrero</SelectItem>
+                  <SelectItem value="Marzo">Marzo</SelectItem>
+                  <SelectItem value="Abril">Abril</SelectItem>
+                  <SelectItem value="Mayo">Mayo</SelectItem>
+                  <SelectItem value="Junio">Junio</SelectItem>
+                  <SelectItem value="Julio">Julio</SelectItem>
+                  <SelectItem value="Agosto">Agosto</SelectItem>
+                  <SelectItem value="Septiembre">Septiembre</SelectItem>
+                  <SelectItem value="Octubre">Octubre</SelectItem>
+                  <SelectItem value="Noviembre">Noviembre</SelectItem>
+                  <SelectItem value="Diciembre">Diciembre</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="creationYear">Año:</Label>
+              <Input
+                id="creationYear"
+                type="text"
+                value={creationYear}
+                onChange={(e) => setCreationYear(e.target.value)}
+                placeholder="2025"
+                className="max-w-xs"
+              />
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Estos valores se usarán para las columnas "Mes" y "Fecha de sesiones" en todos los documentos de este lote.
           </p>
         </div>
         
